@@ -90,7 +90,7 @@ export default function Contact() {
               <div className="pointer-events-none absolute inset-0 bg-pitch-lines opacity-40" />
               <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gold-500/20 blur-3xl" />
 
-              <div className="relative">
+              <div className="relative flex h-full flex-col">
                 <h3 className="font-display text-2xl font-black uppercase text-white sm:text-3xl">
                   Send Us A Message
                 </h3>
@@ -254,6 +254,21 @@ export default function Contact() {
                     )}
                   </AnimatePresence>
                 </form>
+
+                {/* Fills the space left over once the form's fixed-height
+                    fields stop short of the taller details+photo column
+                    beside it. */}
+                <div className="mt-6 min-h-55 flex-1 overflow-hidden rounded-2xl border border-white/20">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57348.190388285184!2d79.8562055!3d6.92183865!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2f3b74291f183d5b%3A0xa12bc58886cf4934!2sColombo%20Kickerz%20Football%20Academy!5e1!3m2!1sen!2slk!4v1788953799405!5m2!1sen!2slk"
+                    title="Colombo Kickerz Football Academy location"
+                    className="h-full min-h-55 w-full"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                </div>
               </div>
             </div>
           </Reveal>
@@ -318,7 +333,7 @@ export default function Contact() {
                 src="/images/gallery3.jpg"
                 alt="Kickerz players at the Colombo Racecourse Ground"
                 loading="lazy"
-                className="h-full min-h-[220px] w-full object-cover"
+                className="h-full min-h-55 w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/85 via-brand-900/20 to-transparent" />
               <p className="absolute inset-x-6 bottom-6 font-display text-lg font-extrabold uppercase leading-tight text-white">
