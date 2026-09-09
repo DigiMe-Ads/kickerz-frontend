@@ -1,0 +1,156 @@
+# =============================================================================
+# Colombo Kickerz - public_html/.htaccess
+# =============================================================================
+# This file is copied verbatim into dist/ by the Vite build (it lives in
+# site/public/) and is uploaded to the ROOT of public_html.
+#
+# READ THIS BEFORE EDITING
+# -----------------------------------------------------------------------------
+# One bad rule here takes down the admin panel, the API and the mobile app at
+# the same time. There is no Git history on the server: keep a copy of the
+# working version before every change, and be ready to restore it.
+#
+# Rules of the road:
+#   * New server-side folders and new surviving PHP pages go in RULE 1, in the
+#     same change that adds them - never as a follow-up.
+#   * Never remove the api/ or kickerz-landing-admin/ exclusions. /api/ serves
+#     the shipped mobile app, not just this website.
+#   * The SPA catch-all in RULE 5 must always be the LAST rewrite rule.
+#   * RULE 4's -f guard is what lets new React routes work: without it, a URL
+#     like /fixtures is rewritten to a non-existent fixtures.php and 404s
+#     instead of reaching the app.
+# =============================================================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  DirectoryIndex index.html index.php
+
+  # ---------------------------------------------------------------------------
+  # 0. Remove the trailing slash from non-directory requests
+  # ---------------------------------------------------------------------------
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} (.+)/$
+  RewriteRule ^ %1 [R=301,L]
+
+  # ---------------------------------------------------------------------------
+  # 1. Hand off untouched areas immediately
+  #    api/                   - serves the Colombo Kickerz mobile app. Off limits.
+  #    kickerz-landing-admin/ - the client's PHP admin panel. Off limits.
+  #    links/                 - actively in use; purpose not yet documented.
+  #    form-api/              - the React contact form's PHP endpoint.
+  # ---------------------------------------------------------------------------
+  RewriteCond %{REQUEST_URI} ^/api/ [OR]
+  RewriteCond %{REQUEST_URI} ^/kickerz-landing-admin/ [OR]
+  RewriteCond %{REQUEST_URI} ^/links/ [OR]
+  RewriteCond %{REQUEST_URI} ^/form-api/
+  RewriteRule ^ - [L]
+
+  # ---------------------------------------------------------------------------
+  # 2. Redirect .php URLs to their clean version (preserves inbound links)
+  # ---------------------------------------------------------------------------
+  RewriteCond %{THE_REQUEST} \s/([^\s?]+)\.php[\s?] [NC]
+  RewriteCond %1 !^api/
+  RewriteCond %1 !^kickerz-landing-admin/
+  RewriteCond %1 !^form-api/
+  RewriteRule ^(.+)\.php$ /%1 [R=301,L]
+
+  # ---------------------------------------------------------------------------
+  # 3. Serve real files and directories as-is
+  # ---------------------------------------------------------------------------
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # ---------------------------------------------------------------------------
+  # 4. Clean URL -> .php, ONLY when that .php actually exists
+  #
+  #    This is what keeps the three legal/compliance pages alive at the exact
+  #    URLs registered with the App Store, Play Store and Meta:
+  #      /privacy-policy-for-the-colombo-kickerz-app
+  #      /support-colombo-kickerz-app
+  #      /data-deletion-request-form
+  #    Those stay as PHP files. Do not build React routes for them.
+  # ---------------------------------------------------------------------------
+  RewriteCond %{DOCUMENT_ROOT}/$1.php -f
+  RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L]
+
+  # ---------------------------------------------------------------------------
+  # 5. Everything else -> the React SPA. Must stay last.
+  # ---------------------------------------------------------------------------
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# =============================================================================
+# Protect the contact form's credentials
+# =============================================================================
+<Files "config.php">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</Files>
+
+<Files "config.sample.php">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+</Files>
+
+# =============================================================================
+# Compression
+# =============================================================================
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/xml
+  AddOutputFilterByType DEFLATE image/svg+xml font/woff2
+</IfModule>
+
+# =============================================================================
+# Caching
+# -----------------------------------------------------------------------------
+# Vite fingerprints every file in /assets/ (name.[hash].js), so those are safe
+# to cache for a year. index.html must NOT be cached, or visitors keep loading
+# the previous deploy's asset names after an upload.
+# =============================================================================
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                "access plus 1 year"
+  ExpiresByType application/javascript  "access plus 1 year"
+  ExpiresByType image/webp              "access plus 6 months"
+  ExpiresByType image/jpeg              "access plus 6 months"
+  ExpiresByType image/png               "access plus 6 months"
+  ExpiresByType image/svg+xml           "access plus 6 months"
+  ExpiresByType font/woff2              "access plus 1 year"
+  ExpiresByType text/html               "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # Baseline security headers. Deliberately conservative: no CSP here, because
+  # a wrong one would break the admin panel and the legacy PHP pages too.
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# =============================================================================
+# MIME types
+# =============================================================================
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+  AddType font/woff2 .woff2
+</IfModule>
+
+# Stop directory listings anywhere they are not explicitly wanted.
+Options -Indexes

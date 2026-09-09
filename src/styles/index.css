@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Colombo Kickerz - design tokens
+   --------------------------------------------------------------------------
+   Every colour below is sampled from the club crest (public/images/logo.png):
+     royal blue  #344AA7   (primary - the crest lettering and boots)
+     gold        #FBC72A   (the lightning bolts and the ball panels)
+     bronze      #958F4A   (the outer shield edge)
+   Change a value here and it updates everywhere - no component hardcodes hex.
+   ========================================================================== */
+@theme {
+  /* --- Brand blue ------------------------------------------------------ */
+  --color-brand-50: #eef1fb;
+  --color-brand-100: #dce2f7;
+  --color-brand-200: #b8c4ef;
+  --color-brand-300: #8e9fe3;
+  --color-brand-400: #6479d2;
+  --color-brand-500: #4459bc;
+  --color-brand-600: #344aa7; /* crest blue */
+  --color-brand-700: #2b3d8a;
+  --color-brand-800: #24326f;
+  --color-brand-900: #1e2a5b;
+  --color-brand-950: #131a3a;
+
+  /* --- Accents --------------------------------------------------------- */
+  --color-gold-300: #ffe27a;
+  --color-gold-400: #ffd650;
+  --color-gold-500: #fbc72a;
+  --color-gold-600: #e0a800;
+  --color-bronze-500: #958f4a;
+
+  /* --- Neutrals used by the dark "stadium" sections -------------------- */
+  --color-ink-700: #1a2036;
+  --color-ink-800: #111629;
+  --color-ink-900: #0a0e1c;
+  --color-ink-950: #05070f;
+
+  /* --- Typography ------------------------------------------------------ */
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Motion ---------------------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-marquee-slow: marquee 60s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shine: shine 2.6s linear infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+  }
+  @keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgb(52 74 167 / 0.45); }
+    70%  { box-shadow: 0 0 0 18px rgb(52 74 167 / 0); }
+    100% { box-shadow: 0 0 0 0 rgb(52 74 167 / 0); }
+  }
+  @keyframes shine {
+    from { transform: translateX(-120%) skewX(-18deg); }
+    to   { transform: translateX(320%) skewX(-18deg); }
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Anyone who prefers less motion gets a static page. */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  body {
+    @apply bg-slate-100 font-sans text-ink-900 antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display font-extrabold tracking-tight;
+  }
+
+  /* Sticky header clearance for in-page anchor links. */
+  section[id] {
+    scroll-margin-top: 96px;
+  }
+
+  ::selection {
+    @apply bg-brand-600 text-white;
+  }
+
+  /* Focus ring that is visible on both light and dark sections. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-gold-500;
+  }
+}
+
+/* ==========================================================================
+   Reusable component classes
+   ========================================================================== */
+@layer components {
+  /* Big rounded white panel that most light sections sit inside - the
+     signature container shape from the reference design. */
+  .panel {
+    @apply rounded-[28px] bg-white shadow-[0_24px_70px_-30px_rgb(15_23_42/0.35)] md:rounded-[40px];
+  }
+
+  .panel-dark {
+    @apply rounded-[28px] bg-ink-900 shadow-[0_30px_80px_-30px_rgb(0_0_0/0.6)] md:rounded-[40px];
+  }
+
+  /* Card that lifts on hover. */
+  .card-lift {
+    @apply transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-[0_28px_60px_-24px_rgb(52_74_167/0.45)];
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+@layer utilities {
+  /* Pauses a marquee while the pointer is over it. */
+  .pause-on-hover:hover > * {
+    animation-play-state: paused;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Hides the scrollbar on horizontally scrolling rails. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Faint pitch-line texture for the dark sections. */
+  .bg-pitch-lines {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+}

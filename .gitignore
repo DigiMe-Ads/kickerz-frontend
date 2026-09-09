@@ -1,0 +1,8 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vite
+
+# Live contact-form credentials. Never commit this file.
+public/form-api/config.php
