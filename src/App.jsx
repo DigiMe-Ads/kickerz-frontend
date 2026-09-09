@@ -8,6 +8,7 @@ import Stats from './components/sections/Stats';
 import About from './components/sections/About';
 import WhyUs from './components/sections/WhyUs';
 import Programs from './components/sections/Programs';
+import Testimonials from './components/sections/Testimonials';
 import Events from './components/sections/Events';
 import Team from './components/sections/Team';
 import Partners from './components/sections/Partners';
@@ -46,6 +47,7 @@ export default function App() {
         <About />
         <WhyUs />
         <Programs />
+        <Testimonials />
         <Events />
         <Team />
         <Partners />

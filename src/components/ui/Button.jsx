@@ -40,7 +40,7 @@ export default function Button({
     <Tag
       href={href}
       className={cn(
-        'group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full font-display font-bold uppercase tracking-[0.14em]',
+        'group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full font-display font-bold uppercase tracking-[0.14em]',
         'transition-[transform,background-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
         'hover:-translate-y-0.5 active:translate-y-0',
         VARIANTS[variant],

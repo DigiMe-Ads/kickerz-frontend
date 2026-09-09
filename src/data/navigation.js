@@ -9,6 +9,7 @@ export const navLeft = [
   { label: 'About', href: '#about' },
   { label: 'Why Us', href: '#why-us' },
   { label: 'Programs', href: '#programs' },
+  { label: 'Testimonials', href: '#testimonials' },
 ];
 
 export const navRight = [

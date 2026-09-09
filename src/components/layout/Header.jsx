@@ -5,7 +5,6 @@ import { site } from '../../data/site';
 import { useScrolled } from '../../hooks/useScrolled';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { cn } from '../../lib/cn';
-import Container from '../ui/Container';
 import Button from '../ui/Button';
 import MobileMenu from './MobileMenu';
 
@@ -37,7 +36,7 @@ export default function Header() {
 
   const linkClass = (href) =>
     cn(
-      'relative font-display text-[13px] font-bold uppercase tracking-[0.08em] transition-colors duration-300',
+      'relative whitespace-nowrap font-display text-[13px] font-bold uppercase tracking-[0.08em] transition-colors duration-300',
       'after:absolute after:-bottom-1.5 after:left-0 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-gold-500 after:transition-transform after:duration-300 hover:after:scale-x-100',
       scrolled ? 'text-ink-900 hover:text-brand-600' : 'text-white/90 hover:text-white',
       activeId && href === `#${activeId}` && 'after:scale-x-100',
@@ -54,7 +53,9 @@ export default function Header() {
             : 'bg-gradient-to-b from-ink-950/70 to-transparent',
         )}
       >
-        <Container className="relative">
+        {/* Wider than the shared Container - the nav needs more breathing room
+            around the crest than the standard 1240px content width allows. */}
+        <div className="relative mx-auto w-full max-w-360 px-5 sm:px-8">
           <div
             className={cn(
               'flex items-center justify-between transition-all duration-500',
@@ -62,7 +63,10 @@ export default function Header() {
             )}
           >
             {/* Left nav (desktop) */}
-            <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
+            <nav
+              className="hidden items-center gap-6 lg:flex lg:flex-1 lg:justify-end lg:pr-24"
+              aria-label="Primary"
+            >
               {navLeft.map((link) => (
                 <a key={link.href} href={link.href} className={linkClass(link.href)}>
                   {link.label}
@@ -95,7 +99,10 @@ export default function Header() {
             </a>
 
             {/* Right nav (desktop) */}
-            <nav className="hidden items-center gap-8 lg:flex" aria-label="Secondary">
+            <nav
+              className="hidden items-center gap-6 lg:flex lg:flex-1 lg:justify-start lg:pl-24"
+              aria-label="Secondary"
+            >
               {navRight.map((link) => (
                 <a key={link.href} href={link.href} className={linkClass(link.href)}>
                   {link.label}
@@ -122,7 +129,7 @@ export default function Header() {
               <Menu className="h-5 w-5" />
             </button>
           </div>
-        </Container>
+        </div>
       </header>
 
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} activeId={activeId} />
