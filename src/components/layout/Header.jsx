@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { navLeft, navRight, navAll } from '../../data/navigation';
 import { site } from '../../data/site';
 import { useScrolled } from '../../hooks/useScrolled';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { cn } from '../../lib/cn';
+import { resolveHref } from '../../lib/nav';
 import Button from '../ui/Button';
 import MobileMenu from './MobileMenu';
 
@@ -20,7 +22,13 @@ const SECTION_IDS = navAll.map((l) => l.href.replace('#', ''));
  */
 export default function Header() {
   const scrolled = useScrolled(40);
-  const activeId = useActiveSection(SECTION_IDS);
+  const { pathname } = useLocation();
+  const onHome = pathname === '/';
+  // Section-scroll highlighting only means something on the page that has
+  // those sections - on a standalone route like /privacy-policy it would
+  // just always show "Home" as active.
+  const sectionActiveId = useActiveSection(SECTION_IDS);
+  const activeId = onHome ? sectionActiveId : null;
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Escape closes the drawer; lock body scroll while it is open.
@@ -68,7 +76,11 @@ export default function Header() {
               aria-label="Primary"
             >
               {navLeft.map((link) => (
-                <a key={link.href} href={link.href} className={linkClass(link.href)}>
+                <a
+                  key={link.href}
+                  href={resolveHref(link.href, pathname)}
+                  className={linkClass(link.href)}
+                >
                   {link.label}
                 </a>
               ))}
@@ -76,7 +88,7 @@ export default function Header() {
 
             {/* Crest - centred on desktop, left-aligned on mobile */}
             <a
-              href="#home"
+              href={resolveHref('#home', pathname)}
               aria-label={`${site.fullName} home`}
               className="lg:absolute lg:left-1/2 lg:top-0 lg:-translate-x-1/2"
             >
@@ -104,11 +116,19 @@ export default function Header() {
               aria-label="Secondary"
             >
               {navRight.map((link) => (
-                <a key={link.href} href={link.href} className={linkClass(link.href)}>
+                <a
+                  key={link.href}
+                  href={resolveHref(link.href, pathname)}
+                  className={linkClass(link.href)}
+                >
                   {link.label}
                 </a>
               ))}
-              <Button href="#contact" variant={scrolled ? 'primary' : 'outline'} size="sm">
+              <Button
+                href={resolveHref('#contact', pathname)}
+                variant={scrolled ? 'primary' : 'outline'}
+                size="sm"
+              >
                 Join Us
               </Button>
             </nav>
@@ -132,7 +152,12 @@ export default function Header() {
         </div>
       </header>
 
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} activeId={activeId} />
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        activeId={activeId}
+        pathname={pathname}
+      />
     </>
   );
 }

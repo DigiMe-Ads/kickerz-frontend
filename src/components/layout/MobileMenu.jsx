@@ -2,13 +2,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X, Phone, Mail, MapPin } from 'lucide-react';
 import { navAll } from '../../data/navigation';
 import { site } from '../../data/site';
+import { resolveHref } from '../../lib/nav';
 import Button from '../ui/Button';
 
 /**
  * Full-height slide-in navigation for small screens.
  * Closes on link click, on the backdrop, and on Escape (handled in Header).
  */
-export default function MobileMenu({ open, onClose, activeId }) {
+export default function MobileMenu({ open, onClose, activeId, pathname }) {
   return (
     <AnimatePresence>
       {open && (
@@ -54,7 +55,7 @@ export default function MobileMenu({ open, onClose, activeId }) {
                     transition={{ delay: 0.06 + i * 0.045 }}
                   >
                     <a
-                      href={link.href}
+                      href={resolveHref(link.href, pathname)}
                       onClick={onClose}
                       className={`flex items-center gap-3 border-b border-slate-100 py-4 font-display text-lg font-bold uppercase tracking-wide transition-colors ${
                         isActive ? 'text-brand-600' : 'text-ink-900 hover:text-brand-600'
@@ -85,7 +86,12 @@ export default function MobileMenu({ open, onClose, activeId }) {
                 <Mail className="h-4 w-4 shrink-0 text-brand-600" />
                 <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
               </p>
-              <Button href="#contact" onClick={onClose} variant="primary" className="mt-2 w-full">
+              <Button
+                href={resolveHref('#contact', pathname)}
+                onClick={onClose}
+                variant="primary"
+                className="mt-2 w-full"
+              >
                 Join The Academy
               </Button>
             </div>

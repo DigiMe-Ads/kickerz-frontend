@@ -1,5 +1,7 @@
+import { useLocation } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { site } from '../../data/site';
+import { resolveHref } from '../../lib/nav';
 import Marquee from '../ui/Marquee';
 
 /**
@@ -7,6 +9,7 @@ import Marquee from '../ui/Marquee';
  * Hidden automatically when `site.announcement` is null.
  */
 export default function AnnouncementBar() {
+  const { pathname } = useLocation();
   const announcement = site.announcement;
   if (!announcement) return null;
 
@@ -15,7 +18,7 @@ export default function AnnouncementBar() {
       <span className="h-1.5 w-1.5 rounded-full bg-gold-500" />
       {announcement.text}
       <a
-        href={announcement.ctaHref}
+        href={resolveHref(announcement.ctaHref, pathname)}
         className="inline-flex items-center gap-1 font-bold text-gold-400 underline-offset-4 hover:underline"
       >
         {announcement.ctaLabel}

@@ -1,7 +1,9 @@
+import { useLocation } from 'react-router-dom';
 import { MapPin, Phone, Mail, ChevronRight, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { site } from '../../data/site';
 import { navAll } from '../../data/navigation';
 import { programs } from '../../data/programs';
+import { resolveHref } from '../../lib/nav';
 import Container from '../ui/Container';
 import Reveal from '../ui/Reveal';
 
@@ -9,9 +11,10 @@ const SOCIAL_ICONS = { facebook: Facebook, instagram: Instagram, linkedin: Linke
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const { pathname } = useLocation();
 
   return (
-    <footer className="relative overflow-hidden bg-ink-900 text-slate-300">
+    <footer id="site-footer" className="relative overflow-hidden bg-ink-900 text-slate-300">
       {/* Gold hairline, carried over from the current site. */}
       <div className="h-1 w-full bg-gradient-to-r from-brand-600 via-gold-500 to-brand-600" />
       <div className="pointer-events-none absolute inset-0 bg-pitch-lines opacity-40" />
@@ -94,7 +97,7 @@ export default function Footer() {
               {navAll.map((link) => (
                 <li key={link.href}>
                   <a
-                    href={link.href}
+                    href={resolveHref(link.href, pathname)}
                     className="group inline-flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
                   >
                     <ChevronRight className="h-3.5 w-3.5 text-gold-500 transition-transform group-hover:translate-x-1" />
@@ -112,7 +115,7 @@ export default function Footer() {
               {programs.map((program) => (
                 <li key={program.id}>
                   <a
-                    href="#programs"
+                    href={resolveHref('#programs', pathname)}
                     className="group inline-flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
                   >
                     <ChevronRight className="h-3.5 w-3.5 text-gold-500 transition-transform group-hover:translate-x-1" />
@@ -122,7 +125,7 @@ export default function Footer() {
               ))}
               <li>
                 <a
-                  href="#why-us"
+                  href={resolveHref('#why-us', pathname)}
                   className="group inline-flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
                 >
                   <ChevronRight className="h-3.5 w-3.5 text-gold-500 transition-transform group-hover:translate-x-1" />
@@ -136,9 +139,11 @@ export default function Footer() {
 
       {/*
         Legal strip.
-        These three pages remain PHP files on the server and are almost
-        certainly the URLs registered with the App Store, Play Store and Meta.
-        Do not turn them into React routes - see README "Deploying".
+        The last three links are PHP files on the server and almost certainly
+        the URLs registered with the App Store, Play Store and Meta for the
+        mobile app. Do not turn those into React routes - see README
+        "Deploying". Privacy Policy / Terms of Service are this website's
+        own pages (src/pages) and are labelled to keep the two apart.
       */}
       <div className="relative border-t border-white/10 bg-brand-800">
         <Container className="flex flex-col items-center justify-between gap-3 py-5 text-center text-xs text-white/80 md:flex-row md:text-left">
@@ -146,8 +151,14 @@ export default function Footer() {
             Copyright &copy; {year} {site.fullName}. All rights reserved.
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            <a href="/privacy-policy-for-the-colombo-kickerz-app" className="hover:text-gold-400">
+            <a href="/privacy-policy" className="hover:text-gold-400">
               Privacy Policy
+            </a>
+            <a href="/terms-of-service" className="hover:text-gold-400">
+              Terms of Service
+            </a>
+            <a href="/privacy-policy-for-the-colombo-kickerz-app" className="hover:text-gold-400">
+              App Privacy Policy
             </a>
             <a href="/support-colombo-kickerz-app" className="hover:text-gold-400">
               App Support

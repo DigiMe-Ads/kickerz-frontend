@@ -54,7 +54,13 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      The inline background is the splash screen's first frame: it paints
+      before the bundle has even parsed, so the load starts dark instead of
+      flashing the site's light background. components/layout/Preloader.jsx
+      strips it once React is rendering.
+    -->
+    <div id="root" style="background-color: #05070f; min-height: 100vh"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

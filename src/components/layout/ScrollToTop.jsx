@@ -1,10 +1,18 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { useScrolled } from '../../hooks/useScrolled';
+import { useElementInView } from '../../hooks/useElementInView';
 
-/** Appears after the first viewport and returns the visitor to the hero. */
+/**
+ * Appears after the first viewport and returns the visitor to the hero.
+ * Ducks out once the footer is on screen - fixed bottom-right, it would
+ * otherwise sit on top of the footer's own legal links at the bottom of
+ * every page.
+ */
 export default function ScrollToTop() {
-  const show = useScrolled(600);
+  const scrolled = useScrolled(600);
+  const nearFooter = useElementInView('site-footer');
+  const show = scrolled && !nearFooter;
 
   return (
     <AnimatePresence>

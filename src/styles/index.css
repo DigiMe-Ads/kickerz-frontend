@@ -129,6 +129,28 @@
   .card-lift {
     @apply transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-[0_28px_60px_-24px_rgb(52_74_167/0.45)];
   }
+
+  /* Plain-HTML prose for the legal pages (Privacy Policy, Terms of Service) -
+     hand-styled rather than pulled in via @tailwindcss/typography, since it's
+     the only place on the site that needs it. */
+  .legal-prose h2 {
+    @apply mt-10 font-display text-lg font-extrabold text-ink-900 first:mt-0 sm:text-xl;
+  }
+  .legal-prose p {
+    @apply mt-4 text-[15px] leading-relaxed text-slate-600;
+  }
+  .legal-prose ul {
+    @apply mt-4 space-y-2 pl-5 text-[15px] leading-relaxed text-slate-600;
+  }
+  .legal-prose li {
+    @apply list-disc;
+  }
+  .legal-prose a {
+    @apply font-semibold text-brand-600 underline-offset-4 hover:underline;
+  }
+  .legal-prose strong {
+    @apply font-semibold text-ink-900;
+  }
 }
 
 /* ==========================================================================
