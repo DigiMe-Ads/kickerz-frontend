@@ -12,9 +12,7 @@ function LogoTile({ partner }) {
         alt={partner.name}
         loading="lazy"
         title={partner.name}
-        /* Greyscale until hover keeps a wall of mismatched logos calm. Opacity
-           stays high because several of these marks are already very light. */
-        className="max-h-14 w-auto max-w-full object-contain opacity-85 grayscale transition-all duration-500 hover:opacity-100 hover:grayscale-0 sm:max-h-16"
+        className="max-h-14 w-auto max-w-full object-contain opacity-90 transition-opacity duration-500 hover:opacity-100 sm:max-h-16"
       />
     </div>
   );
