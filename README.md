@@ -29,11 +29,12 @@ site/
 │   ├── form-api/           PHP endpoint for the contact form
 │   │   ├── contact.php
 │   │   └── config.sample.php
-│   └── images/             All photography, logos and partner marks
-│       ├── hero/           16:9 crops used by the hero slider
-│       ├── team/           Staff portraits (square, 1000×1000)
-│       ├── current-partners/
-│       └── partners-over-the-years/
+│   ├── images/             All photography, logos and partner marks
+│   │   ├── hero/           16:9 crops (still used by Why Us and Programs)
+│   │   ├── team/           Staff portraits (square, 1000×1000)
+│   │   ├── current-partners/
+│   │   └── partners-over-the-years/
+│   └── videos/             Hero background video — see "Hero video" below
 │
 └── src/
     ├── App.jsx             Page composition — the order of the sections
@@ -42,7 +43,7 @@ site/
     ├── data/               ★ ALL SITE CONTENT LIVES HERE ★
     │   ├── site.js         Name, contact details, socials, announcement bar
     │   ├── navigation.js   Header and footer links
-    │   ├── hero.js         Hero slides
+    │   ├── hero.js         Hero messages that rotate over the video
     │   ├── about.js        About / vision / mission cards
     │   ├── features.js     "Why choose us" points
     │   ├── stats.js        The four headline numbers
@@ -94,6 +95,56 @@ makes the page feel like a single product rather than a pile of effects.
 
 Everything respects `prefers-reduced-motion` — the global rule in
 `styles/index.css` collapses all animation for visitors who ask for it.
+
+---
+
+## Hero video
+
+The hero plays a looping clip of a training session instead of a photo. The
+camera original is 4K, 24fps, ~37 MB — far too heavy to serve — so it is kept
+**outside the repo**, next to the other source art:
+
+    new-kickerz-site/videos/hero-original-4k.mp4
+
+What ships is re-encoded from it into `public/videos/`:
+
+| File                | Size   | Who gets it                          |
+| ------------------- | ------ | ------------------------------------ |
+| `hero-1080.webm`    | 2.5 MB | Chrome, Firefox, Edge on ≥768px      |
+| `hero-1080.mp4`     | 3.1 MB | Safari and older browsers on ≥768px  |
+| `hero-720.webm`     | 1.3 MB | Chrome, Firefox, Edge on phones      |
+| `hero-720.mp4`      | 1.4 MB | Safari and older browsers on phones  |
+| `hero-poster.jpg`   | 0.1 MB | First paint, and the reduced-motion still |
+
+VP9 is listed first because it measured both smaller *and* slightly sharper
+than H.264 on this footage (SSIM 0.914 vs 0.909). The size is chosen once on
+mount by `matchMedia` in `Hero.jsx`, so a browser only ever downloads one.
+
+To regenerate after replacing the original (needs ffmpeg):
+
+```bash
+SRC=../videos/hero-original-4k.mp4
+
+# 1080p — desktop
+ffmpeg -i $SRC -map 0:v:0 -an -vf "scale=1920:1080:flags=lanczos,hqdn3d=3:3:6:6"   -c:v libvpx-vp9 -crf 40 -b:v 0 -row-mt 1 -tile-columns 2 -deadline good -cpu-used 4   -pix_fmt yuv420p -g 48 public/videos/hero-1080.webm
+ffmpeg -i $SRC -map 0:v:0 -an -vf "scale=1920:1080:flags=lanczos,hqdn3d=3:3:6:6"   -c:v libx264 -preset slow -crf 29 -maxrate 2200k -bufsize 4400k   -profile:v high -level 4.0 -pix_fmt yuv420p -g 48 -movflags +faststart   public/videos/hero-1080.mp4
+
+# 720p — phones (same two commands at scale=1280:720, crf 42 / 30)
+# Poster — first frame, so there is no jump when playback starts
+ffmpeg -i $SRC -frames:v 1 -vf "scale=1600:-1:flags=lanczos" -q:v 6 public/videos/hero-poster.jpg
+```
+
+`-an` matters: the clip has no audio and the hero is muted regardless.
+`+faststart` on the MP4 lets it begin playing before it has fully downloaded.
+The light `hqdn3d` denoise is what keeps the file small — grass texture is
+otherwise expensive to encode and the detail is invisible under the scrims.
+
+**Readability.** The footage is bright corner to corner (~45% average
+luminance, blown highlights, no dark quarter), so the white copy sits on
+layered scrims rather than on luck. Measured against the playing video, the
+headline backdrop is ~15:1 contrast and the worst single pixel behind it is
+5:1 on desktop and 8:1 on phones — all above the 4.5:1 AA bar. If you lighten
+those layers in `Hero.jsx`, re-measure against the video, not the poster.
 
 ---
 

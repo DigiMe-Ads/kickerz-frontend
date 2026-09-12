@@ -1,12 +1,11 @@
 /**
- * Hero slider.
- * Images live in public/images/hero/ and were cropped to 16:9 from the
- * academy's own photography. Add or remove a slide and the slider adapts.
+ * Hero copy.
+ * The hero plays one looping video (public/videos/, see Hero.jsx); these are
+ * the messages that rotate over it. Add or remove one and the hero adapts.
  */
 export const heroSlides = [
   {
     id: 'juventus',
-    image: '/images/hero/hero-juventus.webp',
     eyebrow: 'Colombo Kickerz Football Academy',
     title: 'Kick-Start Your\nFootball Journey',
     subtitle:
@@ -16,7 +15,6 @@ export const heroSlides = [
   },
   {
     id: 'kickerz-cup',
-    image: '/images/hero/hero-kickerz-cup.webp',
     eyebrow: 'Kickerz Cup 2026',
     title: '73 Teams.\n194 Matches.',
     subtitle:
@@ -26,7 +24,6 @@ export const heroSlides = [
   },
   {
     id: 'training',
-    image: '/images/hero/hero-training.webp',
     eyebrow: 'Training every week',
     title: 'Where Talent\nMeets Character',
     subtitle:
