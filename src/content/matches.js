@@ -12,7 +12,8 @@
  *     status:      'upcoming' | 'live' | 'ft',
  *     kickoff:     'YYYY-MM-DDTHH:mm',
  *     venue:       string,
- *     competition: string   (optional, e.g. "Kickerz Cup - U12")
+ *     competition: string   (optional, e.g. "Kickerz Cup")
+ *     ageGroup:    string   (optional, e.g. "U12")
  *   }
  *
  * `kickoff` is deliberately the wall-clock time as the admin typed it, not a

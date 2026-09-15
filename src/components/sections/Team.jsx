@@ -9,6 +9,7 @@ import CrestTile from '../ui/CrestTile';
 import Reveal from '../ui/Reveal';
 import { CarouselArrow, CarouselDots } from '../ui/CarouselControls';
 import { EASE } from '../../lib/motion';
+import { cn } from '../../lib/cn';
 
 /**
  * Coaching team.
@@ -24,8 +25,31 @@ import { EASE } from '../../lib/motion';
  */
 
 function TeamCard({ member }) {
+  const details = Array.isArray(member.details) ? member.details.filter((d) => d.label || d.value) : [];
+  const hasDetails = details.length > 0;
+  const [open, setOpen] = useState(false);
+
+  // On a phone there's no hover, so a tap toggles the same overlay - only
+  // wired up when there's actually something to show.
+  const toggle = () => hasDetails && setOpen((v) => !v);
+  const onKeyDown = (e) => {
+    if (!hasDetails) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggle();
+    }
+  };
+
   return (
-    <article className="group relative aspect-square overflow-hidden rounded-2xl bg-ink-800 shadow-[0_16px_44px_-24px_rgb(15_23_42/0.7)]">
+    <article
+      className="group relative aspect-square overflow-hidden rounded-2xl bg-ink-800 shadow-[0_16px_44px_-24px_rgb(15_23_42/0.7)]"
+      onClick={toggle}
+      onKeyDown={onKeyDown}
+      tabIndex={hasDetails ? 0 : -1}
+      role={hasDetails ? 'button' : undefined}
+      aria-expanded={hasDetails ? open : undefined}
+      aria-label={hasDetails ? `${member.name} – coaching details` : undefined}
+    >
       {member.image ? (
         <img
           src={member.image}
@@ -40,12 +64,52 @@ function TeamCard({ member }) {
       {/* Bottom scrim so the name plate is legible over any photograph. */}
       <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-ink-950/90 to-transparent" />
 
-      <div className="absolute inset-x-3 bottom-3 rounded-xl bg-brand-600/90 px-4 py-3 backdrop-blur-sm transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-brand-600">
+      <div
+        className={cn(
+          'absolute inset-x-3 bottom-3 rounded-xl bg-brand-600/90 px-4 py-3 backdrop-blur-sm transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-brand-600',
+          hasDetails && 'group-hover:opacity-0 group-focus-visible:opacity-0',
+          open && 'opacity-0',
+        )}
+      >
         <h3 className="font-display text-base font-extrabold leading-tight text-white">
           {member.name}
         </h3>
         <p className="mt-0.5 text-xs text-white/80">{member.role}</p>
       </div>
+
+      {/* Hover (desktop) / tap (touch) card - only rendered once there's
+          something worth showing, so a coach without any details filled in
+          just keeps the plain name plate above rather than an empty panel. */}
+      {hasDetails && (
+        <div
+          className={cn(
+            'absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-ink-950/20 via-ink-950/80 to-ink-950/95 p-4 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 group-focus-visible:opacity-100 sm:p-5',
+            open && 'opacity-100',
+          )}
+        >
+          <div>
+            <h3 className="font-display text-base font-extrabold leading-tight text-white sm:text-lg">
+              {member.name}
+            </h3>
+            <p className="mt-0.5 text-xs text-white/70 sm:text-sm">{member.role}</p>
+          </div>
+
+          <div className="no-scrollbar mt-3 space-y-2.5 overflow-y-auto">
+            {details.map((d, i) => (
+              <div key={i} className={cn(i > 0 && 'border-t border-white/15 pt-2.5')}>
+                {d.label && (
+                  <p className="text-xs font-bold leading-tight text-white sm:text-sm">{d.label}</p>
+                )}
+                {d.value && (
+                  <p className="mt-0.5 text-xs font-semibold leading-tight text-gold-400 sm:text-sm">
+                    {d.value}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </article>
   );
 }

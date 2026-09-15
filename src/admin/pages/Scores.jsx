@@ -20,6 +20,7 @@ const SCORE_SAVE_DELAY = 700;
 function blankMatch(lastVenue) {
   return {
     competition: '',
+    ageGroup: '',
     home: { ...HOME_TEAM },
     away: { name: '', logo: '' },
     status: 'upcoming',
@@ -36,6 +37,7 @@ function toDoc(m) {
   const score = (v) => (upcoming || v === null || v === '' || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(99, Math.round(Number(v)))));
   return {
     competition: (m.competition || '').trim(),
+    ageGroup: (m.ageGroup || '').trim(),
     home: { name: (m.home?.name || '').trim(), logo: m.home?.logo || '' },
     away: { name: (m.away?.name || '').trim(), logo: m.away?.logo || '' },
     status: m.status,
@@ -47,7 +49,7 @@ function toDoc(m) {
 }
 
 /** Columns to read back after a write, so local state matches the server exactly. */
-const SELECT_COLUMNS = 'id, home, away, home_score, away_score, status, kickoff, venue, competition';
+const SELECT_COLUMNS = 'id, home, away, home_score, away_score, status, kickoff, venue, competition, age_group';
 
 /** A camelCase score patch (the only kind of partial update Scores makes) as row columns. */
 function scorePatchToRow({ homeScore, awayScore, ...rest }) {
@@ -211,7 +213,7 @@ function TeamEditor({ label, team, onChange, recentTeams, opponent }) {
 /*  Add / edit sheet                                                          */
 /* -------------------------------------------------------------------------- */
 
-function MatchSheet({ initial, isNew, recentTeams, recentVenues, recentCompetitions, onClose, onSave, onDelete }) {
+function MatchSheet({ initial, isNew, recentTeams, recentVenues, recentCompetitions, recentAgeGroups, onClose, onSave, onDelete }) {
   const [m, setM] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -294,19 +296,35 @@ function MatchSheet({ initial, isNew, recentTeams, recentVenues, recentCompetiti
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-          <FieldShell label="Competition (optional)" htmlFor="m-comp">
-            <input
-              id="m-comp"
-              list="m-comp-list"
-              value={m.competition}
-              onChange={(e) => set({ competition: e.target.value })}
-              placeholder="e.g. Kickerz Cup – U12"
-              className={inputClass}
-            />
-            <datalist id="m-comp-list">
-              {recentCompetitions.map((c) => <option key={c} value={c} />)}
-            </datalist>
-          </FieldShell>
+          <div className="grid grid-cols-2 gap-3">
+            <FieldShell label="Competition (optional)" htmlFor="m-comp">
+              <input
+                id="m-comp"
+                list="m-comp-list"
+                value={m.competition}
+                onChange={(e) => set({ competition: e.target.value })}
+                placeholder="e.g. Kickerz Cup"
+                className={inputClass}
+              />
+              <datalist id="m-comp-list">
+                {recentCompetitions.map((c) => <option key={c} value={c} />)}
+              </datalist>
+            </FieldShell>
+
+            <FieldShell label="Age group (optional)" htmlFor="m-age">
+              <input
+                id="m-age"
+                list="m-age-list"
+                value={m.ageGroup}
+                onChange={(e) => set({ ageGroup: e.target.value })}
+                placeholder="e.g. U12"
+                className={inputClass}
+              />
+              <datalist id="m-age-list">
+                {recentAgeGroups.map((a) => <option key={a} value={a} />)}
+              </datalist>
+            </FieldShell>
+          </div>
 
           <TeamEditor label="Home team" team={m.home} opponent={m.away} onChange={(home) => set({ home })} recentTeams={recentTeams} />
 
@@ -394,7 +412,14 @@ function MatchRow({ match, onQuick, onScore, onEdit, pending }) {
   return (
     <li className={cn('rounded-2xl bg-white p-4 shadow-sm ring-1', live ? 'ring-red-200' : 'ring-slate-200')}>
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">{match.competition || 'Match'}</span>
+        <span className="flex min-w-0 items-center gap-1.5 truncate text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <span className="truncate">{match.competition || 'Match'}</span>
+          {match.ageGroup && (
+            <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-600">
+              {match.ageGroup}
+            </span>
+          )}
+        </span>
         <div className="flex items-center gap-2">
           {pending && <Spinner className="h-3.5 w-3.5 text-slate-400" />}
           <StatusPill status={match.status} />
@@ -633,10 +658,11 @@ export default function Scores() {
   };
 
   // Everything the form can suggest, drawn from matches already entered.
-  const { recentTeams, recentVenues, recentCompetitions } = useMemo(() => {
+  const { recentTeams, recentVenues, recentCompetitions, recentAgeGroups } = useMemo(() => {
     const teams = new Map([[HOME_TEAM.name.toLowerCase(), HOME_TEAM]]);
     const venues = new Set();
     const comps = new Set();
+    const ageGroups = new Set();
     for (const m of matches) {
       for (const t of [m.home, m.away]) {
         const key = t?.name?.trim().toLowerCase();
@@ -646,8 +672,9 @@ export default function Scores() {
       }
       if (m.venue) venues.add(m.venue);
       if (m.competition) comps.add(m.competition);
+      if (m.ageGroup) ageGroups.add(m.ageGroup);
     }
-    return { recentTeams: [...teams.values()], recentVenues: [...venues], recentCompetitions: [...comps] };
+    return { recentTeams: [...teams.values()], recentVenues: [...venues], recentCompetitions: [...comps], recentAgeGroups: [...ageGroups] };
   }, [matches]);
 
   const groups = useMemo(
@@ -727,6 +754,7 @@ export default function Scores() {
             recentTeams={recentTeams}
             recentVenues={recentVenues}
             recentCompetitions={recentCompetitions}
+            recentAgeGroups={recentAgeGroups}
             onClose={() => setSheet(null)}
             onSave={saveSheet}
             onDelete={deleteSheet}

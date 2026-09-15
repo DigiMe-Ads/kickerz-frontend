@@ -70,6 +70,7 @@ export function rowToMatch(row) {
     kickoff: row.kickoff,
     venue: row.venue,
     competition: row.competition,
+    ageGroup: row.age_group,
   };
 }
 
@@ -84,13 +85,14 @@ export function matchToRow(m) {
     kickoff: m.kickoff,
     venue: m.venue,
     competition: m.competition,
+    age_group: m.ageGroup,
   };
 }
 
 export async function fetchMatches(limitCount = 100) {
   const { data, error } = await getRestClient()
     .from(MATCHES_TABLE)
-    .select('id, home, away, home_score, away_score, status, kickoff, venue, competition')
+    .select('id, home, away, home_score, away_score, status, kickoff, venue, competition, age_group')
     .order('kickoff', { ascending: false })
     .limit(limitCount);
   if (error) throw error;

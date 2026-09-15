@@ -64,8 +64,15 @@ function MatchCard({ match }) {
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="truncate font-display text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
-          {match.competition || 'Match'}
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate font-display text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
+            {match.competition || 'Match'}
+          </span>
+          {match.ageGroup && (
+            <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-widest text-white/70 ring-1 ring-white/15">
+              {match.ageGroup}
+            </span>
+          )}
         </span>
         <StatusBadge status={match.status} />
       </div>

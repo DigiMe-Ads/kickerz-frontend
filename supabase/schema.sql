@@ -116,9 +116,15 @@ create table if not exists public.matches (
   kickoff      text not null,
   venue        text not null default '',
   competition  text not null default '',
+  age_group    text not null default '',
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
 );
+
+-- Added after the table's first release - `add column if not exists` so this
+-- still applies cleanly to a project that already has a `matches` table
+-- without it (the `create table if not exists` above is a no-op there).
+alter table public.matches add column if not exists age_group text not null default '';
 
 -- {name, logo}, matching what the admin form and the public Match Centre
 -- both read - see content/matches.js.
@@ -162,6 +168,8 @@ alter table public.matches drop constraint if exists matches_venue_length;
 alter table public.matches add constraint matches_venue_length check (char_length(venue) <= 160);
 alter table public.matches drop constraint if exists matches_competition_length;
 alter table public.matches add constraint matches_competition_length check (char_length(competition) <= 120);
+alter table public.matches drop constraint if exists matches_age_group_length;
+alter table public.matches add constraint matches_age_group_length check (char_length(age_group) <= 40);
 
 create or replace function public.set_match_meta()
 returns trigger
