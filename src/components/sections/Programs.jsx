@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { programs } from '../../data/programs';
+import { useContent } from '../../content/ContentProvider';
 import { useCarousel } from '../../hooks/useCarousel';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
@@ -15,6 +15,7 @@ import { cn } from '../../lib/cn';
  * section, which keeps the cards readable while still feeling like a pitch.
  */
 export default function Programs() {
+  const { title, subtitle, backgroundImage, items: programs } = useContent('programs');
   const { emblaRef, selectedIndex, scrollSnaps, scrollPrev, scrollNext, scrollTo } = useCarousel({
     align: 'start',
     autoplay: 5500,
@@ -26,7 +27,7 @@ export default function Programs() {
         <div className="panel-dark relative overflow-hidden">
           {/* Background photograph + scrims */}
           <img
-            src="/images/hero/hero-training.webp"
+            src={backgroundImage}
             alt=""
             aria-hidden="true"
             loading="lazy"
@@ -37,9 +38,9 @@ export default function Programs() {
 
           <div className="relative px-5 py-16 sm:px-8 lg:px-14 lg:py-20">
             <SectionHeading
-              title="Our Programs"
+              title={title}
               dark
-              subtitle="Football training for every age group and skill level, from first touches at five to elite preparation at eighteen."
+              subtitle={subtitle}
             />
 
             {/* ---------- Carousel ---------- */}

@@ -1,15 +1,17 @@
 import { useLocation } from 'react-router-dom';
-import { MapPin, Phone, Mail, ChevronRight, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { site } from '../../data/site';
+import { MapPin, Phone, Mail, ChevronRight, Facebook, Instagram, Linkedin, Youtube, Globe } from 'lucide-react';
 import { navAll } from '../../data/navigation';
-import { programs } from '../../data/programs';
+import { useContent } from '../../content/ContentProvider';
 import { resolveHref } from '../../lib/nav';
+import { safeHref } from '../../lib/safe';
 import Container from '../ui/Container';
 import Reveal from '../ui/Reveal';
 
-const SOCIAL_ICONS = { facebook: Facebook, instagram: Instagram, linkedin: Linkedin };
+const SOCIAL_ICONS = { facebook: Facebook, instagram: Instagram, linkedin: Linkedin, youtube: Youtube };
 
 export default function Footer() {
+  const site = useContent('site');
+  const programs = useContent('programs').items;
   const year = new Date().getFullYear();
   const { pathname } = useLocation();
 
@@ -31,12 +33,12 @@ export default function Footer() {
               {site.description}
             </p>
             <div className="mt-6 flex gap-3">
-              {site.socials.map((social) => {
-                const Icon = SOCIAL_ICONS[social.icon];
+              {(site.socials || []).map((social) => {
+                const Icon = SOCIAL_ICONS[social.icon] || Globe;
                 return (
                   <a
                     key={social.name}
-                    href={social.href}
+                    href={safeHref(social.href)}
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label={social.name}
@@ -65,7 +67,7 @@ export default function Footer() {
               <li className="flex gap-3">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gold-500" />
                 <span>
-                  {site.contact.phones.map((phone) => (
+                  {(site.contact?.phones || []).map((phone) => (
                     <a
                       key={phone}
                       href={'tel:' + phone.replace(/\s/g, '')}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { navLeft, navRight, navAll } from '../../data/navigation';
-import { site } from '../../data/site';
+import { useContent } from '../../content/ContentProvider';
 import { useScrolled } from '../../hooks/useScrolled';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { cn } from '../../lib/cn';
@@ -21,6 +21,7 @@ const SECTION_IDS = navAll.map((l) => l.href.replace('#', ''));
  * The crest sits in the centre and overhangs the bar on desktop.
  */
 export default function Header() {
+  const site = useContent('site');
   const scrolled = useScrolled(40);
   const { pathname } = useLocation();
   const onHome = pathname === '/';

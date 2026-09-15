@@ -8,6 +8,7 @@ import WhyUs from '../components/sections/WhyUs';
 import Programs from '../components/sections/Programs';
 import Testimonials from '../components/sections/Testimonials';
 import Events from '../components/sections/Events';
+import Results from '../components/sections/Results';
 import Team from '../components/sections/Team';
 import Partners from '../components/sections/Partners';
 import Gallery from '../components/sections/Gallery';
@@ -46,6 +47,7 @@ export default function Home() {
       <Programs />
       <Testimonials />
       <Events />
+      <Results />
       <Team />
       <Partners />
       <Gallery />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { site } from '../../data/site';
+import { useContent, useContentReady } from '../../content/ContentProvider';
 import { useSplashDone } from '../../hooks/useSplashDone';
 import SoccerBall from '../ui/SoccerBall';
 import { EASE } from '../../lib/motion';
@@ -65,21 +65,20 @@ function markSeen() {
  */
 export default function Preloader() {
   const reduce = useReducedMotion();
+  const site = useContent('site');
+  const contentReady = useContentReady();
   // Read once on mount: this must not flip to "seen" mid-animation.
   const [skip] = useState(alreadySeen);
 
-  const done = useSplashDone({
+  const splashDone = useSplashDone({
     minimum: reduce ? 600 : MIN_DURATION,
     enabled: !skip,
   });
+  // Also hold for the site's content, so a first visit never watches the
+  // built-in text swap for the admin's edits. ContentProvider settles within
+  // a few seconds whatever happens, so this can't hold the curtain for good.
+  const done = splashDone && (skip || contentReady);
   const visible = !skip && !done;
-
-  // index.html paints #root dark so there's no white flash before React
-  // boots. Once we're rendering, the splash (or the site) owns the
-  // background instead.
-  useEffect(() => {
-    document.getElementById('root')?.style.removeProperty('background-color');
-  }, []);
 
   useEffect(() => {
     if (done) markSeen();

@@ -11,6 +11,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@supabase/postgrest-js": "2.116.0",
+    "@supabase/supabase-js": "^2.116.0",
     "embla-carousel-autoplay": "^8.5.2",
     "embla-carousel-react": "^8.5.2",
     "framer-motion": "^11.15.0",

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Phone, Mail, MapPin } from 'lucide-react';
 import { navAll } from '../../data/navigation';
-import { site } from '../../data/site';
+import { useContent } from '../../content/ContentProvider';
 import { resolveHref } from '../../lib/nav';
 import Button from '../ui/Button';
 
@@ -10,6 +10,8 @@ import Button from '../ui/Button';
  * Closes on link click, on the backdrop, and on Escape (handled in Header).
  */
 export default function MobileMenu({ open, onClose, activeId, pathname }) {
+  const site = useContent('site');
+  const phone = site.contact?.phones?.[0];
   return (
     <AnimatePresence>
       {open && (
@@ -76,12 +78,12 @@ export default function MobileMenu({ open, onClose, activeId, pathname }) {
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
                 {site.contact.address}
               </p>
-              <p className="flex items-center gap-3">
-                <Phone className="h-4 w-4 shrink-0 text-brand-600" />
-                <a href={`tel:${site.contact.phones[0].replace(/\s/g, '')}`}>
-                  {site.contact.phones[0]}
-                </a>
-              </p>
+              {phone && (
+                <p className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 shrink-0 text-brand-600" />
+                  <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
+                </p>
+              )}
               <p className="flex items-center gap-3">
                 <Mail className="h-4 w-4 shrink-0 text-brand-600" />
                 <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>

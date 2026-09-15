@@ -7,6 +7,9 @@ The hosting is Hostinger shared hosting: Apache, PHP and MySQL, **no Node
 runtime**. Nothing here needs a server process — `npm run build` produces a
 folder of files you upload.
 
+Content and match scores are editable from **`/admin`**, backed by Supabase —
+see [Admin & Supabase](#admin--supabase).
+
 ---
 
 ## Quick start
@@ -18,12 +21,19 @@ npm run build    # writes ./dist
 npm run preview  # serves ./dist locally
 ```
 
+To also exercise the admin, give it a Supabase project first - see
+[Admin & Supabase](#admin--supabase). Until then it shows a clear "not
+configured" banner rather than a confusing error, and the public site just
+runs on its built-in content.
+
 ---
 
 ## How the project is organised
 
 ```
 site/
+├── supabase/
+│   └── schema.sql           Tables, Row Level Security, Storage bucket  ← security-critical, run in the SQL Editor
 ├── public/                 Copied verbatim into dist/ at build time
 │   ├── .htaccess           Apache rules for the whole site  ← read before editing
 │   ├── form-api/           PHP endpoint for the contact form
@@ -37,10 +47,22 @@ site/
 │   └── videos/             Hero background video — see "Hero video" below
 │
 └── src/
-    ├── App.jsx             Page composition — the order of the sections
+    ├── App.jsx             Routes: the public site, and the lazy-loaded /admin
     ├── main.jsx            React entry point
     │
-    ├── data/               ★ ALL SITE CONTENT LIVES HERE ★
+    ├── admin/              /admin and /admin/scores (own bundle)
+    │   ├── schema.js       ★ Describes every editable field — drives the dashboard
+    │   ├── pages/          Dashboard (content), Scores (match entry)
+    │   └── components/     Field (generic editor), MediaField (uploads), …
+    │
+    ├── content/            How the site gets its content
+    │   ├── defaults.js     Built-in content per section, assembled from data/
+    │   ├── ContentProvider Supabase over the defaults; useContent('section')
+    │   └── matches.js      Match Centre ordering and kick-off formatting
+    │
+    ├── pages/              Home, Privacy Policy, Terms of Service, 404
+    │
+    ├── data/               ★ THE DEFAULT CONTENT ★ (live edits are in Supabase)
     │   ├── site.js         Name, contact details, socials, announcement bar
     │   ├── navigation.js   Header and footer links
     │   ├── hero.js         Hero messages that rotate over the video
@@ -58,13 +80,15 @@ site/
     │   ├── sections/       One file per page section, in page order
     │   └── ui/             Reusable primitives (Button, SectionHeading, …)
     │
-    ├── hooks/              useCarousel, useScrolled, useActiveSection
-    ├── lib/                cn (className joiner), motion (shared variants)
+    ├── hooks/              useCarousel, useScrolled, useActiveSection, …
+    ├── lib/                supabase, db (read-only, public bundle), safe (link checks), cn, motion, nav
     └── styles/index.css    Design tokens — colours, fonts, animations
 ```
 
-**The rule of thumb: to change words or pictures, edit `src/data/`. To change
-how something looks, edit `src/components/`.** No component hardcodes copy.
+**The rule of thumb: to change words or pictures, use `/admin`. To change the
+*default* content, edit `src/data/`. To change how something looks, edit
+`src/components/`.** No component hardcodes copy — sections read it with
+`useContent()`.
 
 ---
 
@@ -150,7 +174,8 @@ those layers in `Hero.jsx`, re-measure against the video, not the poster.
 
 ## Content you still need to supply
 
-Three things are deliberately marked in the source rather than invented:
+Three things are deliberately marked in the source rather than invented. All
+three can now be fixed from `/admin` instead of editing code:
 
 1. **Team photographs.** `src/data/team.js` has all 20 slots, but only two
    portraits were handed over. Entries without an `image` render an on-brand
@@ -208,7 +233,7 @@ is no CI, and no Git repository on the server.
 2. `npm run build`.
 
 3. Upload the contents of `dist/` to the root of `public_html`:
-   `index.html`, `assets/`, `images/`, `form-api/` and `.htaccess`.
+   `index.html`, `assets/`, `images/`, `videos/`, `form-api/` and `.htaccess`.
    Enable "show hidden files" in the File Manager or `.htaccess` will be missed.
 
 4. **Do not delete** any of the following. They are outside this project's
@@ -236,6 +261,139 @@ is no CI, and no Git repository on the server.
    - [ ] `/links/` still works
    - [ ] The mobile app can still reach `/api/`
    - [ ] The contact form sends and the email arrives
+   - [ ] `/admin` shows the Kickerz sign-in screen (not something else — see
+         [Admin & Supabase](#admin--supabase) step 6)
+
+---
+
+## Admin & Supabase
+
+Content and match results are edited at **`/admin`**, backed by
+[Supabase](https://supabase.com) (Postgres + Auth + Storage, one free
+project). The site is still plain static files on Hostinger — Supabase is a
+hosted service the browser talks to directly, so there is still no server
+process to run.
+
+| Route           | What it's for                                                         |
+| --------------- | --------------------------------------------------------------------- |
+| `/admin`        | Every section of the site: text, images, the hero video, links        |
+| `/admin/scores` | The Match Centre. Built for a phone at the side of the pitch          |
+
+Both sit behind one sign-in, and are a separate bundle that public visitors
+never download. The public site's own Supabase calls go through
+`@supabase/postgrest-js` directly rather than the full `@supabase/supabase-js`
+client (which bundles Auth/Storage/Realtime together with no way to import
+just the database piece) — see the comment at the top of `src/lib/db.js`.
+
+### One-time setup — do these in order
+
+Until step 1 is done, every write is refused and **the site simply shows its
+built-in content** — exactly as it looks today. Nothing breaks if the site
+goes live first; the admin just can't save yet.
+
+1. **Create a Supabase project** (free tier is fine) at
+   [supabase.com](https://supabase.com/dashboard), then copy **Project
+   Settings → API → Project URL** and the **`anon` `public`** key (not
+   `service_role` - that one must never reach the browser) into
+   `src/lib/supabase-config.js`. Neither value is secret; see that file's own
+   comment.
+
+2. **Run the schema.** Dashboard → **SQL Editor → New query** → paste the
+   entire contents of `supabase/schema.sql` → **Run**. This creates the
+   `content`, `matches` and `admins` tables, turns on Row Level Security on
+   all three (public read, admin-only write), and creates the `uploads`
+   Storage bucket. It's safe to re-run after a `git pull` picks up changes to
+   this file - every statement is idempotent.
+
+3. **Create each admin's account** — dashboard → **Authentication → Users →
+   Add user** (email + password, "Auto Confirm User" on). There is
+   deliberately no sign-up form on the site.
+
+4. **Make them an admin.** Have them sign in at `/admin`. They'll see *"Not an
+   admin yet"* along with the exact SQL to run - copy it, paste it into the
+   SQL Editor, run it:
+   ```sql
+   select public.grant_admin('their-email@example.com');
+   ```
+   They're in on their next refresh. `select public.revoke_admin('...')`
+   undoes it.
+
+5. **Set the Auth redirect URL** — dashboard → **Authentication → URL
+   Configuration** → add this site's `/admin` (e.g.
+   `https://colombokickerz.lk/admin`) as a Redirect URL, or the "forgot
+   password" email's link won't land anywhere useful. Keep `localhost:5173`
+   in the list too, for local dev.
+
+6. **Check the server has no `admin.php` or `admin/` folder at the web root.**
+   `.htaccess` serves real files and PHP pages *before* the React app, so either
+   would take over `/admin`. The existing PHP admin lives at
+   `/kickerz-landing-admin/` and doesn't conflict.
+
+### How content works
+
+- **`src/data/` holds the defaults, not the live content.** Anything saved in
+  the admin lives in the `content` table (one row per section, keyed by
+  section name) and is laid over the default for that section. *Restore
+  original* deletes the row and the section goes back to what's in `src/data/`.
+- Each section is saved whole, so a save never leaves a section half-updated.
+- `updated_at` / `updated_by` are filled in by a database trigger from the
+  signed-in session, not sent by the browser - a client can't backdate a save
+  or claim someone else made it.
+- **Images** are resized in the browser before upload (photos to 1920px, logos
+  to 512px, as WebP) — a phone photo drops from several MB to a few hundred KB.
+- **The hero video** can't be re-encoded in the browser, so an upload replaces
+  the four built-in encodes with that one file as-is. Export it as MP4 (H.264),
+  1080p, under ~15MB; the admin warns above that.
+- Visitors get the last-seen content instantly from a local cache and fresh
+  content in the background; on a first visit the splash screen covers the swap.
+- Not editable from the admin, deliberately: the navigation (it's structure —
+  links must match section ids) and the Privacy Policy / Terms pages (long-form
+  legal text, to be replaced once with the approved version in `src/pages/`).
+
+### The Match Centre
+
+- Hidden entirely until there's at least one match.
+- Shows up to six: anything **live** first, then **upcoming** (soonest first),
+  then **results** (newest first).
+- While a match is live, visitors' pages recheck the score every minute.
+  (Supabase does offer realtime subscriptions instead of polling for this -
+  see the comment in `content/ContentProvider.jsx` if that's worth it later.)
+- Kick-off times are shown exactly as typed — the venue's local time, never
+  converted to the visitor's timezone.
+- An *upcoming* fixture whose kick-off passed over 12 hours ago is hidden rather
+  than shown as "upcoming" days later. Mark it full time to show the result.
+- Teams used before appear as one-tap chips when adding a match, so an
+  opponent's logo only needs uploading once.
+
+### Security model
+
+Reads are public — it's a public website. **Every write** (content, matches,
+uploads) is checked by Postgres itself via Row Level Security
+(`supabase/schema.sql`): the account must be signed in *and* have a row in
+`admins`. That table has no insert/update/delete policy for any client role at
+all - the only way in is the SQL Editor (`grant_admin`, which is itself
+`revoke`d from every client role) - so nobody can make themselves an admin
+through the app, however it's used. Match rows are also validated field by
+field (status, score range, kick-off format, no stray keys), and links coming
+from the admin are checked before they're rendered (`src/lib/safe.js`), as a
+second line of defence if an admin password were ever stolen.
+
+These policies were tested directly against Postgres's actual RLS engine (not
+just read over) before this shipped - anonymous/non-admin/admin attempts at
+every read, write, and the privilege-escalation paths in particular (can a
+non-admin grant themselves access; can an admin grant *another* admin without
+going through `grant_admin`). All denied except the ones that should be.
+
+### Testing changes safely
+
+The straightforward option: Supabase's free tier and RLS make it normal to
+develop directly against the real project - a mistake still can't write
+anywhere the policies don't allow. For a fully local stack instead (Postgres +
+Auth + Storage via Docker), see the
+[Supabase CLI docs](https://supabase.com/docs/guides/local-development) -
+`supabase init` in this folder, `supabase start`, then point
+`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (see `.env.example`) at the
+local instance's printed URL and `anon` key.
 
 ---
 
@@ -256,14 +414,20 @@ exclusion to **rule 1** in the same change — never as a follow-up.
 
 ## Adding a new section
 
-1. Create `src/data/<name>.js` with the content.
-2. Create `src/components/sections/<Name>.jsx`; give the `<section>` an `id`.
-3. Render it in `src/App.jsx`, in page order.
-4. Add the nav entry in `src/data/navigation.js` — the header's active-link
-   highlighting picks it up automatically.
+1. Add its default content to `src/content/defaults.js` (or a new
+   `src/data/<name>.js` that defaults.js imports).
+2. Create `src/components/sections/<Name>.jsx`, read the content with
+   `useContent('<key>')`, and give the `<section>` an `id`.
+3. Render it in `src/pages/Home.jsx`, in page order.
+4. Describe its fields in `src/admin/schema.js` — the dashboard builds the
+   editor from that — and add the key to the section list in
+   `supabase/schema.sql`'s `content_key_check` constraint (then re-run that
+   file in the SQL Editor).
+5. Optionally add a nav entry in `src/data/navigation.js`.
 
-## Adding real pages later
+## Adding real pages
 
-The site is currently one scrolling page. If it grows separate routes, add
-`react-router-dom` around `<App>`. No server change is needed: rule 5 of the
-`.htaccess` already falls through to `index.html` for any unknown path.
+Routes live in `src/App.jsx` (react-router). No server change is needed: rule
+5 of the `.htaccess` already falls through to `index.html` for any unknown
+path — unless a real file or `.php` page of the same name exists on the
+server, which wins.

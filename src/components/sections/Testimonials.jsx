@@ -1,6 +1,6 @@
 import { Quote, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { testimonials } from '../../data/testimonials';
+import { useContent } from '../../content/ContentProvider';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import HexIcon from '../ui/HexIcon';
@@ -8,17 +8,18 @@ import { stagger, fadeUp, viewportOnce } from '../../lib/motion';
 
 /**
  * Testimonials - social proof between "what we offer" (Programs) and
- * "see us in action" (Events). Quotes come straight from data/testimonials.js;
+ * "see us in action" (Events). Quotes come from the admin (defaults in data/testimonials.js);
  * there are no headshots on file for parents, so each card gets an initials
  * badge instead of a photo - same fallback logic as CrestTile, just inline.
  */
 export default function Testimonials() {
+  const { title, subtitle, items: testimonials } = useContent('testimonials');
   return (
     <section id="testimonials" className="relative py-20 lg:py-28">
       <Container>
         <SectionHeading
-          title="From Our Kickerz Family"
-          subtitle="Parents watch every training session from the sideline. Players feel every one of them. Here's what both have to say."
+          title={title}
+          subtitle={subtitle}
         />
 
         <motion.div

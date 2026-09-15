@@ -1,4 +1,4 @@
-import { stats } from '../../data/stats';
+import { useContent } from '../../content/ContentProvider';
 import Container from '../ui/Container';
 import Counter from '../ui/Counter';
 import Reveal from '../ui/Reveal';
@@ -8,6 +8,7 @@ import Reveal from '../ui/Reveal';
  * Every figure here is stated on the academy's existing site.
  */
 export default function Stats() {
+  const stats = useContent('stats').items;
   return (
     <section aria-label="Academy at a glance" className="relative z-20 -mt-16 lg:-mt-20">
       <Container>

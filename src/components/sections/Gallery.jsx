@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Instagram, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { galleryImages, instagramHandle, instagramUrl } from '../../data/gallery';
+import { useContent } from '../../content/ContentProvider';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
@@ -16,6 +16,7 @@ import { EASE } from '../../lib/motion';
  * Even 4:5 tiles tile cleanly at any count.
  */
 export default function Gallery() {
+  const { title, subtitle, instagramUrl, images: galleryImages } = useContent('gallery');
   const [openIndex, setOpenIndex] = useState(null);
   const isOpen = openIndex !== null;
 
@@ -45,12 +46,8 @@ export default function Gallery() {
     <section id="gallery" className="relative py-20 lg:py-28">
       <Container>
         <SectionHeading
-          title="Inside The Academy"
-          subtitle={
-            'Follow us on Instagram ' +
-            instagramHandle +
-            ' to see the latest training sessions, matches and academy life.'
-          }
+          title={title}
+          subtitle={subtitle}
         />
 
         <div className="mt-14 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">

@@ -1,4 +1,4 @@
-import { currentPartners, pastPartners } from '../../data/partners';
+import { useContent } from '../../content/ContentProvider';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import Marquee from '../ui/Marquee';
@@ -27,14 +27,15 @@ function LogoTile({ partner }) {
  * make the loop seamless.
  */
 export default function Partners() {
+  const { title, subtitle, current: currentPartners, past: pastPartners } = useContent('partners');
   return (
     <section id="partners" className="relative py-20 lg:py-28">
       <Container>
         <div className="panel overflow-hidden px-0 py-14 lg:py-20">
           <div className="px-5 sm:px-10">
             <SectionHeading
-              title="Our Partners"
-              subtitle="We are proud to work with these organizations, today and throughout our journey."
+              title={title}
+              subtitle={subtitle}
             />
           </div>
 

@@ -1,4 +1,5 @@
 import { cn } from '../../lib/cn';
+import { useContent } from '../../content/ContentProvider';
 
 /**
  * Stand-in used wherever a team photograph has not been supplied yet.
@@ -6,9 +7,10 @@ import { cn } from '../../lib/cn';
  * Rather than a grey box or a broken image, it renders the club crest on the
  * brand gradient with a faint pitch-line texture, so a roster that is only
  * partly photographed still looks deliberate. Swap it out simply by setting
- * `image` on the member in data/team.js.
+ * the member's photo in the admin.
  */
 export default function CrestTile({ className, label }) {
+  const { logo } = useContent('site');
   return (
     <div
       className={cn(
@@ -22,7 +24,7 @@ export default function CrestTile({ className, label }) {
       {/* soft light sweep so the tile is not flat */}
       <div className="absolute -inset-x-10 -top-24 h-48 rotate-12 bg-white/10 blur-3xl" />
       <img
-        src="/images/logo.png"
+        src={logo}
         alt=""
         aria-hidden="true"
         loading="lazy"

@@ -1,4 +1,4 @@
-import { site } from '../data/site';
+import { useContent } from '../content/ContentProvider';
 import LegalPageLayout from '../components/legal/LegalPageLayout';
 
 /**
@@ -12,6 +12,7 @@ import LegalPageLayout from '../components/legal/LegalPageLayout';
  * and README "Deploying".
  */
 export default function PrivacyPolicy() {
+  const site = useContent('site');
   return (
     <LegalPageLayout title="Privacy Policy" updated="September 2026">
       <p>
@@ -67,6 +68,11 @@ export default function PrivacyPolicy() {
         </li>
         <li>
           <strong>Google Fonts</strong> - used to load the site's typefaces.
+        </li>
+        <li>
+          <strong>Supabase</strong> - stores the website's content, match results and images, and
+          handles sign-in for our staff. It does not store anything you submit through the
+          contact form.
         </li>
       </ul>
 

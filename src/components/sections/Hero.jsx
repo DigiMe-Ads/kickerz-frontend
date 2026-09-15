@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown, Pause, Play } from 'lucide-react';
-import { heroSlides } from '../../data/hero';
+import { useContent } from '../../content/ContentProvider';
+import { DEFAULT_CONTENT } from '../../content/defaults';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import BrushStroke from '../ui/BrushStroke';
@@ -39,7 +40,11 @@ function pickVideoSize() {
 
 /**
  * Full-bleed hero: one looping training-ground video behind copy that
- * rotates through the messages in data/hero.js.
+ * rotates through the slides edited in the admin (defaults in data/hero.js).
+ *
+ * A video uploaded from the admin replaces the four built-in encodes with a
+ * single file, played as uploaded - the browser can't re-encode it, so the
+ * admin warns about size at upload time.
  *
  * The footage is bright and busy end to end (a sunlit 4G pitch, white line
  * markings, players in yellow and pale blue bibs), and it averages ~45%
@@ -54,16 +59,23 @@ function pickVideoSize() {
  */
 export default function Hero() {
   const reduceMotion = useReducedMotion();
+  const hero = useContent('hero');
+  // Never render a hero with no copy, whatever gets saved.
+  const heroSlides = hero.slides?.length ? hero.slides : DEFAULT_CONTENT.hero.slides;
+  const customVideo = hero.videoUrl || '';
+  const poster = hero.posterUrl || VIDEO_POSTER;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [videoSources] = useState(pickVideoSize);
   const [videoPlaying, setVideoPlaying] = useState(true);
   const videoRef = useRef(null);
-  const slide = heroSlides[index];
+  const slide = heroSlides[index % heroSlides.length];
+  const slideKey = slide.id || `slide-${index % heroSlides.length}`;
 
+  const slideCount = heroSlides.length;
   const goTo = useCallback(
-    (i) => setIndex(((i % heroSlides.length) + heroSlides.length) % heroSlides.length),
-    [],
+    (i) => setIndex(((i % slideCount) + slideCount) % slideCount),
+    [slideCount],
   );
 
   useEffect(() => {
@@ -92,7 +104,8 @@ export default function Hero() {
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
     };
-  }, []);
+    // Re-attach when the <video> re-mounts for a new source (see its key).
+  }, [customVideo]);
 
   const toggleVideo = () => {
     const video = videoRef.current;
@@ -118,7 +131,7 @@ export default function Hero() {
           /* Anyone who asked for less motion gets the still frame, and is
              never made to download the video to see it. */
           <img
-            src={VIDEO_POSTER}
+            src={poster}
             alt=""
             aria-hidden="true"
             fetchpriority="high"
@@ -126,8 +139,11 @@ export default function Hero() {
           />
         ) : (
           <video
+            // Re-mount when the source changes: a <video> ignores new <source>
+            // children once it has picked one.
+            key={customVideo || 'built-in'}
             ref={videoRef}
-            poster={VIDEO_POSTER}
+            poster={poster}
             autoPlay
             muted
             loop
@@ -137,8 +153,16 @@ export default function Hero() {
             tabIndex={-1}
             className="h-full w-full object-cover object-center"
           >
-            <source src={videoSources.webm} type="video/webm" />
-            <source src={videoSources.mp4} type="video/mp4" />
+            {customVideo ? (
+              // No `type`: an uploaded file could be MP4 or WebM, and the
+              // browser sniffs it more reliably than a guessed MIME type.
+              <source src={customVideo} />
+            ) : (
+              <>
+                <source src={videoSources.webm} type="video/webm" />
+                <source src={videoSources.mp4} type="video/mp4" />
+              </>
+            )}
           </video>
         )}
       </div>
@@ -163,7 +187,7 @@ export default function Hero() {
       <Container className="relative z-10 py-20 lg:py-28">
         <div className="max-w-3xl">
           <AnimatePresence mode="wait">
-            <motion.div key={slide.id} initial="hidden" animate="visible" exit="exit">
+            <motion.div key={slideKey} initial="hidden" animate="visible" exit="exit">
               {/* Eyebrow on a painted band */}
               <motion.div
                 variants={{
@@ -223,12 +247,16 @@ export default function Hero() {
                 }}
                 className="mt-9 flex flex-wrap items-center gap-3 sm:gap-4"
               >
-                <Button href={slide.primaryCta.href} variant="primary" size="lg">
-                  {slide.primaryCta.label}
-                </Button>
-                <Button href={slide.secondaryCta.href} variant="outline" size="lg">
-                  {slide.secondaryCta.label}
-                </Button>
+                {slide.primaryCta?.label && (
+                  <Button href={slide.primaryCta.href} variant="primary" size="lg">
+                    {slide.primaryCta.label}
+                  </Button>
+                )}
+                {slide.secondaryCta?.label && (
+                  <Button href={slide.secondaryCta.href} variant="outline" size="lg">
+                    {slide.secondaryCta.label}
+                  </Button>
+                )}
               </motion.div>
             </motion.div>
           </AnimatePresence>
@@ -238,20 +266,20 @@ export default function Hero() {
             <div className="mt-12 flex items-center gap-3">
               {heroSlides.map((s, i) => (
                 <button
-                  key={s.id}
+                  key={s.id || i}
                   type="button"
                   onClick={() => goTo(i)}
                   aria-label={'Go to slide ' + (i + 1) + ': ' + s.eyebrow}
-                  aria-current={i === index}
+                  aria-current={i === index % slideCount}
                   className={cn(
                     'group relative h-1.5 overflow-hidden rounded-full bg-white/25 transition-all duration-500',
-                    i === index ? 'w-16' : 'w-8 hover:bg-white/45',
+                    i === index % slideCount ? 'w-16' : 'w-8 hover:bg-white/45',
                   )}
                 >
                   {/* Progress fill doubles as the autoplay timer. */}
-                  {i === index && (
+                  {i === index % slideCount && (
                     <motion.span
-                      key={slide.id + '-progress'}
+                      key={slideKey + '-progress'}
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: paused ? 0.999 : 1 }}
                       transition={{ duration: paused ? 0 : SLIDE_DURATION / 1000, ease: 'linear' }}

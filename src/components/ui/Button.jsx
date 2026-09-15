@@ -1,4 +1,5 @@
 import { cn } from '../../lib/cn';
+import { safeHref } from '../../lib/safe';
 
 const VARIANTS = {
   /** Solid brand blue - the main call to action. */
@@ -38,7 +39,7 @@ export default function Button({
 
   return (
     <Tag
-      href={href}
+      href={href ? safeHref(href) : undefined}
       className={cn(
         'group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full font-display font-bold uppercase tracking-[0.14em]',
         'transition-[transform,background-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',

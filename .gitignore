@@ -6,3 +6,10 @@ dist
 
 # Live contact-form credentials. Never commit this file.
 public/form-api/config.php
+
+# Local Supabase config - VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY aren't
+# secret, but keeping them out of git means switching projects (staging vs
+# production, or a developer's own test project) never risks a commit that
+# points the built site somewhere unintended. Copy .env.example to get started.
+.env
+.env.local

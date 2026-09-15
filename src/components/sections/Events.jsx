@@ -1,5 +1,5 @@
 import { CalendarDays, ArrowUpRight } from 'lucide-react';
-import { events } from '../../data/events';
+import { useContent } from '../../content/ContentProvider';
 import { useCarousel } from '../../hooks/useCarousel';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
@@ -12,6 +12,7 @@ import { CarouselArrow, CarouselDots } from '../ui/CarouselControls';
  * photography still lines up across the rail.
  */
 export default function Events() {
+  const { title, subtitle, items: events } = useContent('events');
   const { emblaRef, selectedIndex, scrollSnaps, scrollPrev, scrollNext, scrollTo } = useCarousel({
     align: 'start',
   });
@@ -21,8 +22,8 @@ export default function Events() {
       <Container>
         <div className="panel px-5 py-14 sm:px-10 lg:px-14 lg:py-20">
           <SectionHeading
-            title="Events & Tournaments"
-            subtitle="Join us for exciting events and tournaments. From local competitions to international tours, Kickerz provides unmatched opportunities for young players."
+            title={title}
+            subtitle={subtitle}
           />
 
           <div className="relative mt-14">

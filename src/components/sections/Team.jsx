@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutGrid, ChevronUp } from 'lucide-react';
-import { team } from '../../data/team';
+import { useContent } from '../../content/ContentProvider';
 import { useCarousel } from '../../hooks/useCarousel';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
@@ -16,7 +16,7 @@ import { EASE } from '../../lib/motion';
  * The academy has twenty staff members, which is too many for a single rail
  * and too many to dump into a grid unprompted. So this section shows a
  * carousel by default and expands into a full grid on request. Both views read
- * from the same array in data/team.js - add or remove a member there and
+ * from the same list (edited in the admin; defaults in data/team.js) - add or remove a member and
  * nothing here needs touching.
  *
  * Members without a photograph render the club crest instead (see CrestTile),
@@ -51,6 +51,7 @@ function TeamCard({ member }) {
 }
 
 export default function Team() {
+  const { title, subtitle, members: team } = useContent('team');
   const [showAll, setShowAll] = useState(false);
   const { emblaRef, selectedIndex, scrollSnaps, scrollPrev, scrollNext, scrollTo } = useCarousel({
     align: 'start',
@@ -60,12 +61,10 @@ export default function Team() {
     <section id="team" className="relative py-20 lg:py-28">
       <Container>
         <SectionHeading
-          title="Our Coaching Team"
-          subtitle={
-            'Internationally certified coaches dedicated to developing young talent with professional expertise — ' +
-            team.length +
-            ' strong across every age group.'
-          }
+          title={title}
+          // {count} in the admin's text becomes the live roster size, so the
+          // number can never drift from the cards actually shown.
+          subtitle={subtitle?.replaceAll('{count}', String(team.length))}
         />
 
         <AnimatePresence mode="wait" initial={false}>

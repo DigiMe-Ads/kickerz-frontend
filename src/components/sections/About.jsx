@@ -1,5 +1,5 @@
 import { CircleDot, Target, Trophy } from 'lucide-react';
-import { aboutCards, aboutIntro } from '../../data/about';
+import { useContent } from '../../content/ContentProvider';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import HexIcon from '../ui/HexIcon';
@@ -14,15 +14,16 @@ const ICONS = { ball: CircleDot, target: Target, trophy: Trophy };
  * corner of each card, split-colour heading, then body copy.
  */
 export default function About() {
+  const { title, subtitle, cards } = useContent('about');
   return (
     <section id="about" className="relative py-20 lg:py-28">
       <Container>
         <div className="panel px-5 py-14 sm:px-10 lg:px-14 lg:py-20">
-          <SectionHeading title="About Colombo Kickerz" subtitle={aboutIntro.lead} />
+          <SectionHeading title={title} subtitle={subtitle} />
 
           <div className="mt-16 grid gap-8 md:grid-cols-3 md:gap-6 lg:gap-8">
-            {aboutCards.map((card, i) => {
-              const Icon = ICONS[card.icon];
+            {cards.map((card, i) => {
+              const Icon = ICONS[card.icon] || CircleDot;
               return (
                 <Reveal key={card.id} delay={i * 0.12} className="group relative pt-7">
                   {/* Hexagon badge, overlapping the card corner */}

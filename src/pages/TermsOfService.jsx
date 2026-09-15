@@ -1,4 +1,4 @@
-import { site } from '../data/site';
+import { useContent } from '../content/ContentProvider';
 import LegalPageLayout from '../components/legal/LegalPageLayout';
 
 /**
@@ -7,6 +7,7 @@ import LegalPageLayout from '../components/legal/LegalPageLayout';
  * the layout.
  */
 export default function TermsOfService() {
+  const site = useContent('site');
   return (
     <LegalPageLayout title="Terms of Service" updated="September 2026">
       <p>

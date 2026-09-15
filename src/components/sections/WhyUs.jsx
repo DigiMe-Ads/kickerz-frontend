@@ -1,7 +1,6 @@
 import { Award, Globe2, Heart, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { features } from '../../data/features';
-import { site } from '../../data/site';
+import { useContent } from '../../content/ContentProvider';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import HexIcon from '../ui/HexIcon';
@@ -16,12 +15,15 @@ const ICONS = { award: Award, globe: Globe2, heart: Heart, trending: TrendingUp 
  * offsets, which keeps the left column alive without pulling focus.
  */
 export default function WhyUs() {
+  const { title, subtitle, images = [], features } = useContent('whyUs');
+  const { established } = useContent('site');
+  const [first, second, third] = images;
   return (
     <section id="why-us" className="relative py-20 lg:py-28">
       <Container>
         <SectionHeading
-          title="Why Choose Kickerz"
-          subtitle="Discover the unique advantages that make Colombo Kickerz the premier youth football academy in Sri Lanka."
+          title={title}
+          subtitle={subtitle}
         />
 
         <div className="mt-16 grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
@@ -34,24 +36,24 @@ export default function WhyUs() {
 
             <div className="relative grid grid-cols-2 gap-4">
               <motion.img
-                src="/images/gallery3.jpg"
-                alt="Colombo Kickerz players during a training session"
+                src={first?.src}
+                alt={first?.alt || ''}
                 loading="lazy"
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
                 className="col-span-1 aspect-[3/4] w-full rounded-2xl object-cover shadow-xl"
               />
               <motion.img
-                src="/images/gallery4.jpg"
-                alt="Kickerz squad at an academy event"
+                src={second?.src}
+                alt={second?.alt || ''}
                 loading="lazy"
                 animate={{ y: [0, 12, 0] }}
                 transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
                 className="col-span-1 mt-10 aspect-square w-full rounded-2xl object-cover shadow-xl"
               />
               <motion.img
-                src="/images/hero/hero-kickerz-cup.webp"
-                alt="Kickerz players celebrating a goal at the Kickerz Cup"
+                src={third?.src}
+                alt={third?.alt || ''}
                 loading="lazy"
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
@@ -63,7 +65,7 @@ export default function WhyUs() {
                 goes stale - do not hardcode the number. */}
             <div className="absolute -bottom-6 left-4 flex items-center gap-3 rounded-2xl bg-brand-600 px-5 py-4 text-white shadow-[0_20px_40px_-18px_rgb(52_74_167/0.9)] lg:-left-8">
               <span className="font-display text-3xl font-black leading-none">
-                {new Date().getFullYear() - site.established}
+                {new Date().getFullYear() - established}
               </span>
               <span className="text-[11px] font-semibold uppercase leading-tight tracking-wider">
                 Years
@@ -82,7 +84,7 @@ export default function WhyUs() {
             className="space-y-3"
           >
             {features.map((feature) => {
-              const Icon = ICONS[feature.icon];
+              const Icon = ICONS[feature.icon] || Award;
               return (
                 <motion.li
                   key={feature.number}

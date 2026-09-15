@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { site } from '../../data/site';
-import { programs } from '../../data/programs';
+import { useContent } from '../../content/ContentProvider';
+import { safeMapEmbed } from '../../lib/safe';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import Reveal from '../ui/Reveal';
@@ -34,6 +34,10 @@ const INITIAL = {
 };
 
 export default function Contact() {
+  const site = useContent('site');
+  const programs = useContent('programs').items;
+  const copy = useContent('contact');
+  const mapSrc = safeMapEmbed(copy.mapEmbedUrl);
   const [values, setValues] = useState(INITIAL);
   const [status, setStatus] = useState('idle'); // idle | sending | success | error
   const [error, setError] = useState('');
@@ -79,8 +83,8 @@ export default function Contact() {
     <section id="contact" className="relative py-20 lg:py-28">
       <Container>
         <SectionHeading
-          title="Get In Touch"
-          subtitle="Ready to join Sri Lanka's leading youth football academy? Send us a message and our team will get back to you."
+          title={copy.title}
+          subtitle={copy.subtitle}
         />
 
         <div className="mt-14 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -92,10 +96,10 @@ export default function Contact() {
 
               <div className="relative flex h-full flex-col">
                 <h3 className="font-display text-2xl font-black uppercase text-white sm:text-3xl">
-                  Send Us A Message
+                  {copy.formTitle}
                 </h3>
                 <p className="mt-2 text-sm text-white/75">
-                  Trials, programs, tournaments or partnerships — we read every enquiry.
+                  {copy.formSubtitle}
                 </p>
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
@@ -258,17 +262,19 @@ export default function Contact() {
                 {/* Fills the space left over once the form's fixed-height
                     fields stop short of the taller details+photo column
                     beside it. */}
-                <div className="mt-6 min-h-55 flex-1 overflow-hidden rounded-2xl border border-white/20">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57348.190388285184!2d79.8562055!3d6.92183865!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2f3b74291f183d5b%3A0xa12bc58886cf4934!2sColombo%20Kickerz%20Football%20Academy!5e1!3m2!1sen!2slk!4v1788953799405!5m2!1sen!2slk"
-                    title="Colombo Kickerz Football Academy location"
-                    className="h-full min-h-55 w-full"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                  />
-                </div>
+                {mapSrc && (
+                  <div className="mt-6 min-h-55 flex-1 overflow-hidden rounded-2xl border border-white/20">
+                    <iframe
+                      src={mapSrc}
+                      title={`${site.fullName} location`}
+                      className="h-full min-h-55 w-full"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </Reveal>
@@ -296,7 +302,7 @@ export default function Contact() {
                   <h4 className="font-display text-sm font-extrabold uppercase tracking-wide text-ink-900">
                     Contact Numbers
                   </h4>
-                  {site.contact.phones.map((phone) => (
+                  {(site.contact?.phones || []).map((phone) => (
                     <a
                       key={phone}
                       href={'tel:' + phone.replace(/\s/g, '')}
@@ -327,18 +333,17 @@ export default function Contact() {
             </div>
 
             <div className="relative flex-1 overflow-hidden rounded-[28px]">
-              {/* Must be a photo taken at the home ground - the caption below
-                  names it. */}
+              {/* Should be a photo taken at the place the caption names. */}
               <img
-                src="/images/gallery3.jpg"
-                alt="Kickerz players at the Colombo Racecourse Ground"
+                src={copy.photo}
+                alt={[copy.photoCaption, copy.photoCaptionAccent].filter(Boolean).join(' ')}
                 loading="lazy"
                 className="h-full min-h-55 w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/85 via-brand-900/20 to-transparent" />
               <p className="absolute inset-x-6 bottom-6 font-display text-lg font-extrabold uppercase leading-tight text-white">
-                Training every week at the
-                <span className="text-gold-400"> Colombo Racecourse Ground</span>
+                {copy.photoCaption}
+                {copy.photoCaptionAccent && <span className="text-gold-400"> {copy.photoCaptionAccent}</span>}
               </p>
             </div>
           </Reveal>
