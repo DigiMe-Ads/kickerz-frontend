@@ -6,13 +6,16 @@
 -- is how you pick up a newer copy of this file after a `git pull`.
 --
 -- What this sets up:
---   1. admins    - who is allowed to write (an allowlist, not a role)
---   2. content   - one row per editable section of the site (src/admin/schema.js)
---   3. matches   - the Match Centre
+--   1. admins     - who is allowed to write (an allowlist, not a role)
+--   2. content    - one row per editable section of the site (src/admin/schema.js)
+--   3. matches    - the Match Centre
 --   4. grant_admin(email) / revoke_admin(email) - manage the allowlist by email
---   5. The "uploads" Storage bucket, with the same admin-only write rule
+--   5. enquiries  - the contact form's submissions (public insert, admin-only read)
+--   6. The "uploads" Storage bucket, with the same admin-only write rule
 --
--- Every table gets Row Level Security: public read, admin-only write.
+-- Every table gets Row Level Security: public read, admin-only write - except
+-- enquiries, which flips that (public write, admin-only read) since it's a
+-- contact form, see its own section below.
 --
 -- See README "Admin & Supabase" for the parts of setup that happen outside
 -- SQL (creating accounts, environment variables, Auth redirect URLs).
@@ -253,7 +256,66 @@ $$;
 revoke all on function public.revoke_admin(text) from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------------
--- 5. Storage - the "uploads" bucket for images and the hero video.
+-- 5. enquiries - submissions from the public contact form (Contact.jsx),
+--    readable only from the admin's "Enquiries" page.
+--
+--    Unlike every other table here, the write side is public on purpose -
+--    it's a contact form, anyone visiting the site has to be able to submit
+--    one without an account. What keeps this from being an open dumping
+--    ground is that INSERT is the *only* thing a visitor's request can do:
+--    there's no select policy, so a submission can't be read back, listed,
+--    enumerated or overwritten by anyone but an admin - the same is_admin()
+--    check as content and matches above.
+-- ---------------------------------------------------------------------------
+create table if not exists public.enquiries (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  email       text not null,
+  phone       text not null default '',
+  subject     text not null default '',
+  message     text not null,
+  read        boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+
+alter table public.enquiries drop constraint if exists enquiries_name_length;
+alter table public.enquiries add constraint enquiries_name_length check (char_length(name) between 1 and 200);
+alter table public.enquiries drop constraint if exists enquiries_email_length;
+alter table public.enquiries add constraint enquiries_email_length check (char_length(email) between 1 and 320);
+alter table public.enquiries drop constraint if exists enquiries_phone_length;
+alter table public.enquiries add constraint enquiries_phone_length check (char_length(phone) <= 40);
+alter table public.enquiries drop constraint if exists enquiries_subject_length;
+alter table public.enquiries add constraint enquiries_subject_length check (char_length(subject) <= 120);
+alter table public.enquiries drop constraint if exists enquiries_message_length;
+alter table public.enquiries add constraint enquiries_message_length check (char_length(message) between 1 and 4000);
+
+create index if not exists enquiries_created_at_idx on public.enquiries (created_at desc);
+
+alter table public.enquiries enable row level security;
+
+drop policy if exists "anyone can submit an enquiry" on public.enquiries;
+create policy "anyone can submit an enquiry"
+  on public.enquiries for insert
+  with check (true);
+
+drop policy if exists "only admins can read enquiries" on public.enquiries;
+create policy "only admins can read enquiries"
+  on public.enquiries for select
+  using (public.is_admin());
+
+drop policy if exists "only admins can update enquiries" on public.enquiries;
+create policy "only admins can update enquiries"
+  on public.enquiries for update
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "only admins can delete enquiries" on public.enquiries;
+create policy "only admins can delete enquiries"
+  on public.enquiries for delete
+  using (public.is_admin());
+
+-- ---------------------------------------------------------------------------
+-- 6. Storage - the "uploads" bucket for images and the hero video.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('uploads', 'uploads', true, 209715200, array['image/*', 'video/*']) -- 200MB, matches src/admin/upload.js
@@ -289,4 +351,7 @@ create policy "only admins can write uploads"
 -- =============================================================================
 -- Done. Next: create an account for yourself in Authentication -> Users, then
 -- run   select public.grant_admin('you@example.com');   and sign in at /admin.
+--
+-- Optional: instagram-sync.sql in this same folder keeps the Gallery section
+-- updated from Instagram automatically - see README "Instagram auto-sync".
 -- =============================================================================

@@ -7,6 +7,7 @@ import { useScrolled } from '../../hooks/useScrolled';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { cn } from '../../lib/cn';
 import { resolveHref } from '../../lib/nav';
+import { whatsappHref } from '../../lib/whatsapp';
 import Button from '../ui/Button';
 import MobileMenu from './MobileMenu';
 
@@ -126,7 +127,7 @@ export default function Header() {
                 </a>
               ))}
               <Button
-                href={resolveHref('#contact', pathname)}
+                href={whatsappHref('Hi! I’d like to find out more about joining Colombo Kickerz.')}
                 variant={scrolled ? 'primary' : 'outline'}
                 size="sm"
               >

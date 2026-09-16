@@ -1,3 +1,5 @@
+import { whatsappHref } from '../lib/whatsapp';
+
 /**
  * Programs / services.
  *
@@ -24,7 +26,7 @@ export const programs = [
       'Social development',
       'Parent participation',
     ],
-    cta: { label: 'Enquire Now', href: '#contact' },
+    cta: { label: 'Enquire Now', href: whatsappHref('Hi! I’d like to enquire about Kickerz Kiddies.') },
   },
   {
     id: 'youth',
@@ -38,7 +40,7 @@ export const programs = [
       'Weekly skill challenges',
       'Tournament match play',
     ],
-    cta: { label: 'Enquire Now', href: '#contact' },
+    cta: { label: 'Enquire Now', href: whatsappHref('Hi! I’d like to enquire about Kickerz Youth.') },
   },
   {
     id: 'elite',
@@ -52,7 +54,7 @@ export const programs = [
       'Physical conditioning',
       'Mental preparation',
     ],
-    cta: { label: 'Enquire Now', href: '#contact' },
+    cta: { label: 'Enquire Now', href: whatsappHref('Hi! I’d like to enquire about Kickerz Elite.') },
   },
   {
     id: 'tours',
@@ -66,7 +68,7 @@ export const programs = [
       'Vilimale Invitational',
       'Abu Dhabi Cup',
     ],
-    cta: { label: 'Enquire Now', href: '#contact' },
+    cta: { label: 'Enquire Now', href: whatsappHref('Hi! I’d like to enquire about the International Tours.') },
   },
   {
     id: 'camps',
@@ -80,7 +82,7 @@ export const programs = [
       'Goalkeeper-specific sessions',
       'Annual football carnival',
     ],
-    cta: { label: 'Enquire Now', href: '#contact' },
+    cta: { label: 'Enquire Now', href: whatsappHref('Hi! I’d like to enquire about the Specialized Camps.') },
   },
 ];
 

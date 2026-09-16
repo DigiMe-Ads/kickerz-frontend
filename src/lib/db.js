@@ -21,6 +21,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase-config';
 
 export const CONTENT_TABLE = 'content';
 export const MATCHES_TABLE = 'matches';
+export const ENQUIRIES_TABLE = 'enquiries';
 
 let client;
 
@@ -99,4 +100,23 @@ export async function fetchMatches(limitCount = 100) {
   return data.map(rowToMatch);
 }
 
-export default { fetchAllContent, fetchMatches, rowToMatch, matchToRow };
+/**
+ * Submits the public contact form (Contact.jsx). Anyone can insert a row
+ * here - Row Level Security only grants public INSERT, never SELECT, so a
+ * submission can't be read back except by an admin, in the admin's own
+ * "Enquiries" page (see supabase/schema.sql).
+ */
+export async function submitEnquiry({ name, email, phone, subject, message }) {
+  const { error } = await getRestClient()
+    .from(ENQUIRIES_TABLE)
+    .insert({
+      name: (name || '').trim(),
+      email: (email || '').trim(),
+      phone: (phone || '').trim(),
+      subject: (subject || '').trim(),
+      message: (message || '').trim(),
+    });
+  if (error) throw error;
+}
+
+export default { fetchAllContent, fetchMatches, rowToMatch, matchToRow, submitEnquiry };

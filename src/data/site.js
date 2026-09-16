@@ -1,3 +1,5 @@
+import { whatsappHref } from '../lib/whatsapp';
+
 /**
  * Global site information.
  * Single source of truth for anything that appears in more than one place
@@ -30,7 +32,7 @@ export const site = {
   announcement: {
     text: 'Registration is open for the 2026 season — ages 5 to 18 welcome.',
     ctaLabel: 'Join Now',
-    ctaHref: '#contact',
+    ctaHref: whatsappHref('Hi! I saw the registration announcement — I’d like to join Colombo Kickerz.'),
   },
 };
 

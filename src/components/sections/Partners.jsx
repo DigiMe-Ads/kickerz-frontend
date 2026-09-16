@@ -1,4 +1,5 @@
 import { useContent } from '../../content/ContentProvider';
+import { whatsappHref } from '../../lib/whatsapp';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import Marquee from '../ui/Marquee';
@@ -27,7 +28,7 @@ function LogoTile({ partner }) {
  * make the loop seamless.
  */
 export default function Partners() {
-  const { title, subtitle, current: currentPartners, past: pastPartners } = useContent('partners');
+  const { title, subtitle, sponsors, current: currentPartners, past: pastPartners } = useContent('partners');
   return (
     <section id="partners" className="relative py-20 lg:py-28">
       <Container>
@@ -38,6 +39,20 @@ export default function Partners() {
               subtitle={subtitle}
             />
           </div>
+
+          {/* ---------- Academy sponsors ---------- */}
+          {sponsors?.length > 0 && (
+            <Reveal className="mt-14 px-5 sm:px-10">
+              <p className="text-center font-display text-[11px] font-bold uppercase tracking-[0.22em] text-gold-600">
+                Academy Sponsors
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+                {sponsors.map((sponsor) => (
+                  <LogoTile key={sponsor.name} partner={sponsor} />
+                ))}
+              </div>
+            </Reveal>
+          )}
 
           {/* ---------- Current partners ---------- */}
           <Reveal className="mt-14">
@@ -67,7 +82,9 @@ export default function Partners() {
             <p className="text-sm text-slate-500">
               Interested in partnering with Sri Lanka&rsquo;s leading youth football academy?{' '}
               <a
-                href="#contact"
+                href={whatsappHref('Hi! I’m interested in partnering with Colombo Kickerz.')}
+                target="_blank"
+                rel="noreferrer noopener"
                 className="font-semibold text-brand-600 underline-offset-4 hover:underline"
               >
                 Get in touch

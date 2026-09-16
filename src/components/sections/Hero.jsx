@@ -239,13 +239,32 @@ export default function Hero() {
                 {slide.subtitle}
               </motion.p>
 
+              {slide.note && (
+                <motion.p
+                  variants={{
+                    hidden: { opacity: 0, y: 26 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE, delay: 0.28 } },
+                    exit: { opacity: 0, transition: { duration: 0.25 } },
+                  }}
+                  className="mt-2 max-w-xl text-[15px] leading-relaxed text-slate-200 drop-shadow-[0_2px_12px_rgb(0_0_0/0.6)] sm:text-lg"
+                >
+                  {slide.note}
+                </motion.p>
+              )}
+
               <motion.div
                 variants={{
                   hidden: { opacity: 0, y: 22 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE, delay: 0.34 } },
                   exit: { opacity: 0, transition: { duration: 0.25 } },
                 }}
-                className="mt-9 flex flex-wrap items-center gap-3 sm:gap-4"
+                className={cn(
+                  'mt-9 flex flex-wrap items-center gap-3 sm:gap-4',
+                  // A slide with just one button (no secondary) centers it
+                  // under the paragraph's own width, rather than left-aligned
+                  // against the wider hero column.
+                  slide.primaryCta?.label && !slide.secondaryCta?.label && 'max-w-xl justify-center',
+                )}
               >
                 {slide.primaryCta?.label && (
                   <Button href={slide.primaryCta.href} variant="primary" size="lg">

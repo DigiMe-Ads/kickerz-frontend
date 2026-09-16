@@ -3,6 +3,7 @@ import { X, Phone, Mail, MapPin } from 'lucide-react';
 import { navAll } from '../../data/navigation';
 import { useContent } from '../../content/ContentProvider';
 import { resolveHref } from '../../lib/nav';
+import { whatsappHref } from '../../lib/whatsapp';
 import Button from '../ui/Button';
 
 /**
@@ -89,7 +90,7 @@ export default function MobileMenu({ open, onClose, activeId, pathname }) {
                 <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
               </p>
               <Button
-                href={resolveHref('#contact', pathname)}
+                href={whatsappHref('Hi! I’d like to find out more about joining Colombo Kickerz.')}
                 onClick={onClose}
                 variant="primary"
                 className="mt-2 w-full"

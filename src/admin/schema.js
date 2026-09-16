@@ -1,3 +1,5 @@
+import { whatsappHref } from '../lib/whatsapp';
+
 /**
  * The admin dashboard's editor for every section, described as data.
  *
@@ -16,10 +18,10 @@
  * with useContent() in the component, describe it here.
  */
 
-/** In-page anchors offered as suggestions for any link field. */
+/** In-page anchors (plus WhatsApp) offered as suggestions for any link field. */
 export const LINK_SUGGESTIONS = [
   '#home', '#about', '#why-us', '#programs', '#testimonials', '#events',
-  '#results', '#team', '#partners', '#gallery', '#contact',
+  '#results', '#team', '#partners', '#gallery', '#contact', whatsappHref(),
 ];
 
 const ctaGroup = (key, label) => ({
@@ -128,19 +130,22 @@ export const SECTIONS = [
         label: 'Headlines',
         itemLabel: 'headline',
         min: 1,
+        help: 'Leave a slide’s secondary button text empty to show just one button, centered under the paragraph.',
         itemTitle: (s) => (s.title || 'Headline').replace(/\n/g, ' '),
         newItem: () => ({
           id: newId('slide'),
           eyebrow: '',
           title: '',
           subtitle: '',
-          primaryCta: { label: 'Join The Academy', href: '#contact' },
+          note: '',
+          primaryCta: { label: 'Join The Academy', href: whatsappHref('Hi! I’d like to find out more about joining Colombo Kickerz.') },
           secondaryCta: { label: '', href: '#programs' },
         }),
         fields: [
           { type: 'text', key: 'eyebrow', label: 'Small label above' },
           { type: 'textarea', key: 'title', label: 'Headline', rows: 2, help: 'Press Enter to break the line where you want it.' },
           { type: 'textarea', key: 'subtitle', label: 'Supporting text', rows: 3 },
+          { type: 'text', key: 'note', label: 'Extra line (optional)', help: 'A short line shown under the supporting text, same style - e.g. "Book your FREE TRY-OUT today!". Leave empty to skip it.' },
           ctaGroup('primaryCta', 'Primary button'),
           ctaGroup('secondaryCta', 'Secondary button'),
         ],
@@ -185,7 +190,7 @@ export const SECTIONS = [
         itemLabel: 'card',
         min: 1,
         itemTitle: (c) => `${c.title || ''} ${c.titleAccent || ''}`.trim() || 'Card',
-        newItem: () => ({ id: newId('card'), icon: 'ball', title: '', titleAccent: '', body: '', footnote: '', cta: { label: '', href: '#contact' } }),
+        newItem: () => ({ id: newId('card'), icon: 'ball', title: '', titleAccent: '', body: '', footnote: '', cta: { label: '', href: whatsappHref() } }),
         fields: [
           {
             type: 'select',
@@ -274,7 +279,7 @@ export const SECTIONS = [
           ageRange: '',
           featured: false,
           points: [],
-          cta: { label: 'Enquire Now', href: '#contact' },
+          cta: { label: 'Enquire Now', href: whatsappHref() },
         }),
         fields: [
           { type: 'text', key: 'name', label: 'Name' },
@@ -395,9 +400,21 @@ export const SECTIONS = [
   {
     key: 'partners',
     label: 'Partners',
-    description: 'The two scrolling rows of partner logos.',
+    description: 'Academy sponsors and the two scrolling rows of partner logos.',
     fields: [
       ...heading(),
+      {
+        type: 'list',
+        key: 'sponsors',
+        label: 'Academy sponsors',
+        itemLabel: 'sponsor',
+        itemTitle: (p) => p.name || 'Sponsor',
+        newItem: () => ({ name: '', logo: '' }),
+        fields: [
+          { type: 'text', key: 'name', label: 'Name' },
+          { type: 'image', key: 'logo', label: 'Logo', variant: 'logo' },
+        ],
+      },
       {
         type: 'list',
         key: 'current',
@@ -439,6 +456,7 @@ export const SECTIONS = [
         itemLabel: 'photo',
         itemTitle: (p, i) => p.alt || `Photo ${i + 1}`,
         newItem: () => ({ src: '', alt: '' }),
+        help: 'If Instagram auto-sync is set up (supabase/instagram-sync.sql), this list is replaced by your latest posts on its own schedule - anything edited here by hand will be overwritten by the next sync.',
         fields: [
           { type: 'image', key: 'src', label: 'Photo', variant: 'photo' },
           { type: 'text', key: 'alt', label: 'Description', help: 'Describe the photo for visitors using screen readers.' },

@@ -5,6 +5,12 @@
  * project. Correct any spelling against the partner's own branding before
  * launch - `alt` text is what screen readers announce.
  */
+/** The academy's own sponsors, shown above the current-partners row. */
+export const academySponsors = [
+  { name: 'Lady J', logo: '/images/current-partners/ladyj.webp' },
+  { name: 'Airtrack', logo: '/images/current-partners/airtrack.webp' },
+];
+
 export const currentPartners = [
   { name: 'Ace Travels Maldives', logo: '/images/current-partners/ace-travels-maldives.webp' },
   { name: 'Airtrack', logo: '/images/current-partners/airtrack.webp' },
@@ -41,4 +47,4 @@ export const pastPartners = [
   { name: 'Wealth Trust', logo: '/images/partners-over-the-years/wealth-trust.webp' },
 ];
 
-export default { currentPartners, pastPartners };
+export default { academySponsors, currentPartners, pastPartners };

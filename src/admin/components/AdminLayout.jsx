@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Trophy, ExternalLink, LogOut } from 'lucide-react';
+import { LayoutDashboard, Trophy, Mail, ExternalLink, LogOut } from 'lucide-react';
 import { useAuth } from '../auth';
 import { DEFAULT_CONTENT } from '../../content/defaults';
 import { cn } from '../../lib/cn';
@@ -31,6 +31,10 @@ export default function AdminLayout({ children }) {
             <NavLink to="/admin/scores" className={tabClass}>
               <Trophy className="h-4 w-4" />
               <span>Scores</span>
+            </NavLink>
+            <NavLink to="/admin/enquiries" className={tabClass}>
+              <Mail className="h-4 w-4" />
+              <span className="hidden sm:inline">Enquiries</span>
             </NavLink>
           </nav>
 

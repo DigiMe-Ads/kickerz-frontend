@@ -8,6 +8,7 @@ import LoginScreen from './components/LoginScreen';
 import NotAuthorized from './components/NotAuthorized';
 import Dashboard from './pages/Dashboard';
 import Scores from './pages/Scores';
+import Enquiries from './pages/Enquiries';
 import { SUPABASE_CONFIGURED } from '../lib/supabase-config';
 
 function Gate() {
@@ -28,6 +29,7 @@ function Gate() {
       <Routes>
         <Route index element={<Dashboard />} />
         <Route path="scores" element={<Scores />} />
+        <Route path="enquiries" element={<Enquiries />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </AdminLayout>

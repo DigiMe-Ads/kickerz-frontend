@@ -36,10 +36,18 @@ export default function Button({
   ...props
 }) {
   const Tag = as || (href ? 'a' : 'button');
+  // An off-site link (WhatsApp, a social profile pasted into the admin, …)
+  // opens in a new tab rather than navigating away from the site; an
+  // in-page anchor or a mailto:/tel: link behaves as normal. Explicit
+  // target/rel props (none currently pass any) would still win, since
+  // ...props is spread after these.
+  const external = typeof href === 'string' && /^https?:\/\//i.test(href);
 
   return (
     <Tag
       href={href ? safeHref(href) : undefined}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer noopener' : undefined}
       className={cn(
         'group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full font-display font-bold uppercase tracking-[0.14em]',
         'transition-[transform,background-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',

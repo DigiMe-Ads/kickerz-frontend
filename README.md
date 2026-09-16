@@ -197,11 +197,17 @@ Search the codebase for `needsReview` to find them all.
 
 ## Contact form
 
-The form in `src/components/sections/Contact.jsx` POSTs JSON to
-`/form-api/contact.php`.
+The form in `src/components/sections/Contact.jsx` does two things on submit:
 
-It has to be server-side: the academy's SMTP credentials must never appear in
-the JavaScript bundle, because everything in that bundle is public.
+1. Saves the message to Supabase (the `enquiries` table, `supabase/schema.sql`)
+   so it shows up in **/admin → Enquiries**. This is the part the success/error
+   message on screen actually depends on.
+2. POSTs the same JSON to `/form-api/contact.php`, best-effort, so the academy
+   also gets an email. A failure here is silent - the message is already saved
+   by step 1 either way.
+
+Step 2 has to be server-side: the academy's SMTP credentials must never appear
+in the JavaScript bundle, because everything in that bundle is public.
 
 **Setup on the server:**
 
@@ -210,13 +216,63 @@ the JavaScript bundle, because everything in that bundle is public.
    `config.php` is blocked from the web by a `<Files>` rule in `.htaccess`.
 3. Confirm `.htaccess` still excludes `/form-api/` from the SPA rewrite.
 
-`npm run dev` has no PHP, so submitting the form locally shows a network error.
-That is expected. To test it properly, build and serve `dist/` with PHP:
+`npm run dev` has no PHP, so step 2 shows a network error locally, which is
+expected and harmless - step 1 (Supabase) still works. To test step 2 as well,
+build and serve `dist/` with PHP:
 
 ```bash
 npm run build
 php -S localhost:8000 -t dist
 ```
+
+---
+
+## Instagram auto-sync
+
+Optional. Run `supabase/instagram-sync.sql` (after `schema.sql`) and the
+Gallery section's photos refresh from the academy's Instagram automatically,
+on a schedule - nobody has to touch the admin for them to stay current. Photos
+added by hand in the admin's Gallery section will be overwritten by the next
+sync.
+
+**One-time setup (Instagram's side, not this repo) - do this yourself, since
+it needs your own login:**
+
+1. On the Instagram account itself: **Settings → Account type and tools →
+   Switch to professional account** → choose **Business** (or **Creator**).
+   This is required - the API this uses does not work on a personal account.
+2. At [developers.facebook.com](https://developers.facebook.com) → **My Apps
+   → Create App** → choose the **Business** app type → give it any name.
+3. In the new app's dashboard, add the **Instagram** product. Look for an
+   "API setup with Instagram login" (or similarly named) section - it should
+   walk you through connecting the Instagram account from step 1, and once
+   connected, give you a **long-lived access token** directly (a "Generate
+   token" button is the usual shape of this) plus the account's numeric
+   **Instagram user ID**.
+   > Meta renames and reshuffles this dashboard often enough that the exact
+   > screen you see may not match this description - if it looks noticeably
+   > different, send a screenshot and the steps can be adjusted.
+4. Send both values back - the access token and the user ID - so they can be
+   set for step 5.
+
+**Setup on this end (once you have both values):**
+
+5. Open `supabase/instagram-sync.sql`, paste the token and user ID into the
+   `insert into private.settings` block near the top, then run the whole file
+   in the Supabase SQL Editor. It creates a scheduled job (`pg_cron`) that
+   fetches the latest posts every few hours and writes them into
+   `content.gallery.images` - the same place the admin's Gallery photos live -
+   plus a second monthly job that refreshes the token before Instagram's
+   60-day expiry, so this shouldn't need touching again.
+6. To run it once immediately instead of waiting for the schedule:
+   ```sql
+   select private.sync_instagram_gallery();
+   ```
+7. To check what the last few runs actually did:
+   ```sql
+   select jobname, status, return_message, end_time
+   from cron.job_run_details order by end_time desc limit 10;
+   ```
 
 ---
 

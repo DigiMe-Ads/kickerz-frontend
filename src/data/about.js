@@ -1,3 +1,5 @@
+import { whatsappHref } from '../lib/whatsapp';
+
 /**
  * "About" section - the three-card row plus the intro paragraph.
  * Copy is taken verbatim from the existing colombokickerz.lk homepage.
@@ -15,7 +17,7 @@ export const aboutCards = [
     title: 'About',
     titleAccent: 'KICKERZ',
     body: "Founded in 2015, Colombo Kickerz Football Academy has grown into Sri Lanka's leading youth football academy. With over 300+ children trained every year across multiple age groups, we are committed to raising the standard of football while creating a fun, safe, and professional environment for kids.",
-    cta: { label: 'Join The Academy', href: '#contact' },
+    cta: { label: 'Join The Academy', href: whatsappHref('Hi! I’d like to find out more about joining Colombo Kickerz.') },
   },
   {
     id: 'vision',

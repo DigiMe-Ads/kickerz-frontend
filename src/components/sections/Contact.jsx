@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useContent } from '../../content/ContentProvider';
 import { safeMapEmbed } from '../../lib/safe';
+import { whatsappHref } from '../../lib/whatsapp';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import Reveal from '../ui/Reveal';
@@ -11,14 +12,17 @@ import Reveal from '../ui/Reveal';
  * Contact / enquiry form.
  *
  * -------------------------------------------------------------------------
- * The form POSTs JSON to /form-api/contact.php, a small PHP endpoint that
- * lives beside the built site on Hostinger (source: public/form-api/).
- * It has to be server-side: the academy's SMTP credentials must never end up
- * in the JavaScript bundle, which is public.
+ * Every submission is saved straight to Supabase (the `enquiries` table -
+ * see supabase/schema.sql) so it shows up in the admin's Enquiries page.
+ * That insert is the one thing this form actually depends on for its
+ * success/error state below.
  *
- * `npm run dev` has no PHP runtime, so submissions fail locally with the
- * network error below. Test the form against the real host, or run a local
- * `php -S` on the built output. See README "Contact form".
+ * Alongside it, this also POSTs the same JSON to /form-api/contact.php, a
+ * small PHP endpoint that lives beside the built site on Hostinger (source:
+ * public/form-api/) and emails the academy - best-effort, since it has to be
+ * server-side (the academy's SMTP credentials must never end up in the
+ * JavaScript bundle, which is public) and doesn't exist at all in local dev.
+ * A failure there is silently ignored: the message is already saved above.
  * -------------------------------------------------------------------------
  */
 
@@ -48,21 +52,32 @@ export default function Contact() {
     e.preventDefault();
     if (status === 'sending') return;
 
+    // Honeypot: real visitors never see this field, so anything that
+    // filled it in is a bot - pretend to succeed without saving or sending
+    // anything anywhere.
+    if (values.company) {
+      setStatus('success');
+      setValues(INITIAL);
+      return;
+    }
+
     setStatus('sending');
     setError('');
 
     try {
-      const response = await fetch(ENDPOINT, {
+      // Imported on demand, same reasoning as ContentProvider's fetchRemote:
+      // Supabase stays its own chunk rather than weighing down the main
+      // bundle every visitor downloads.
+      const { submitEnquiry } = await import('../../lib/db');
+      await submitEnquiry(values);
+
+      // Fire-and-forget: see the file header for why a failure here doesn't
+      // affect the outcome below.
+      fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || 'We could not send your message. Please try again.');
-      }
+      }).catch(() => {});
 
       setStatus('success');
       setValues(INITIAL);
@@ -71,7 +86,7 @@ export default function Contact() {
       setError(
         err instanceof TypeError
           ? 'Could not reach the server. Please check your connection and try again.'
-          : err.message,
+          : 'We could not send your message. Please try again.',
       );
     }
   };
@@ -250,10 +265,20 @@ export default function Contact() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         role="alert"
-                        className="flex items-center gap-2 rounded-xl bg-white/15 px-4 py-3 text-sm text-white"
+                        className="flex items-start gap-2 rounded-xl bg-white/15 px-4 py-3 text-sm text-white"
                       >
-                        <AlertCircle className="h-4 w-4 shrink-0 text-gold-400" />
-                        {error}
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />
+                        <span>
+                          {error}{' '}
+                          <a
+                            href={whatsappHref("Hi! I tried to send a message through the website but it didn't go through.")}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="font-semibold text-gold-400 underline-offset-4 hover:underline"
+                          >
+                            Message us on WhatsApp instead.
+                          </a>
+                        </span>
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -279,8 +304,23 @@ export default function Contact() {
             </div>
           </Reveal>
 
-          {/* ---------- Details + photo ---------- */}
+          {/* ---------- Photo + details ---------- */}
           <Reveal variant="right" delay={0.1} className="flex flex-col gap-6">
+            <div className="relative flex-1 overflow-hidden rounded-[28px]">
+              {/* Should be a photo taken at the place the caption names. */}
+              <img
+                src={copy.photo}
+                alt={[copy.photoCaption, copy.photoCaptionAccent].filter(Boolean).join(' ')}
+                loading="lazy"
+                className="h-full min-h-55 w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-900/85 via-brand-900/20 to-transparent" />
+              <p className="absolute inset-x-6 bottom-6 font-display text-lg font-extrabold uppercase leading-tight text-white">
+                {copy.photoCaption}
+                {copy.photoCaptionAccent && <span className="text-gold-400"> {copy.photoCaptionAccent}</span>}
+              </p>
+            </div>
+
             <div className="panel space-y-6 p-7 sm:p-9">
               <div className="flex gap-4">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
@@ -330,21 +370,6 @@ export default function Contact() {
                   </a>
                 </div>
               </div>
-            </div>
-
-            <div className="relative flex-1 overflow-hidden rounded-[28px]">
-              {/* Should be a photo taken at the place the caption names. */}
-              <img
-                src={copy.photo}
-                alt={[copy.photoCaption, copy.photoCaptionAccent].filter(Boolean).join(' ')}
-                loading="lazy"
-                className="h-full min-h-55 w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-900/85 via-brand-900/20 to-transparent" />
-              <p className="absolute inset-x-6 bottom-6 font-display text-lg font-extrabold uppercase leading-tight text-white">
-                {copy.photoCaption}
-                {copy.photoCaptionAccent && <span className="text-gold-400"> {copy.photoCaptionAccent}</span>}
-              </p>
             </div>
           </Reveal>
         </div>

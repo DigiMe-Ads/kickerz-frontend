@@ -7,7 +7,7 @@ import { programs } from '../data/programs';
 import { testimonials } from '../data/testimonials';
 import { events } from '../data/events';
 import { team } from '../data/team';
-import { currentPartners, pastPartners } from '../data/partners';
+import { academySponsors, currentPartners, pastPartners } from '../data/partners';
 import { galleryImages, instagramHandle, instagramUrl } from '../data/gallery';
 
 /**
@@ -108,6 +108,7 @@ export const DEFAULT_CONTENT = {
   partners: {
     title: 'Our Partners',
     subtitle: 'We are proud to work with these organizations, today and throughout our journey.',
+    sponsors: academySponsors,
     current: currentPartners,
     past: pastPartners,
   },

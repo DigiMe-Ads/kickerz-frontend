@@ -1,6 +1,7 @@
 import { CalendarDays, ArrowUpRight } from 'lucide-react';
 import { useContent } from '../../content/ContentProvider';
 import { useCarousel } from '../../hooks/useCarousel';
+import { whatsappHref } from '../../lib/whatsapp';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
 import { CarouselArrow, CarouselDots } from '../ui/CarouselControls';
@@ -62,7 +63,9 @@ export default function Events() {
                         </p>
 
                         <a
-                          href="#contact"
+                          href={whatsappHref(`Hi! I'd like to enquire about ${event.title}.`)}
+                          target="_blank"
+                          rel="noreferrer noopener"
                           className="mt-5 inline-flex items-center gap-1.5 self-start font-display text-[11px] font-bold uppercase tracking-[0.14em] text-brand-600 transition-colors hover:text-brand-800"
                         >
                           Enquire
