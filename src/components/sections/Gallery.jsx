@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Instagram, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Instagram, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useContent } from '../../content/ContentProvider';
 import Container from '../ui/Container';
 import SectionHeading from '../ui/SectionHeading';
@@ -62,7 +62,7 @@ export default function Gallery() {
                 type="button"
                 onClick={() => setOpenIndex(i)}
                 className="block h-full w-full"
-                aria-label={'Open image: ' + image.alt}
+                aria-label={(image.video ? 'Play video: ' : 'Open image: ') + image.alt}
               >
                 <img
                   src={image.src}
@@ -72,9 +72,18 @@ export default function Gallery() {
                 />
 
                 <span className="absolute inset-0 bg-brand-900/0 transition-colors duration-500 group-hover:bg-brand-900/45" />
+
+                {/* Always-on Reel badge, since a phone has no hover to reveal
+                    the play affordance below. */}
+                {image.video && (
+                  <span className="absolute right-2.5 top-2.5 grid h-8 w-8 place-items-center rounded-full bg-ink-950/55 text-white ring-1 ring-white/40 backdrop-blur-sm">
+                    <Play className="h-3.5 w-3.5 translate-x-px fill-current" />
+                  </span>
+                )}
+
                 <span className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                   <span className="grid h-12 w-12 place-items-center rounded-full bg-white/95 text-brand-700">
-                    <Instagram className="h-5 w-5" />
+                    {image.video ? <Play className="h-5 w-5 translate-x-0.5 fill-current" /> : <Instagram className="h-5 w-5" />}
                   </span>
                 </span>
               </button>
@@ -124,16 +133,45 @@ export default function Gallery() {
               <ChevronLeft className="h-6 w-6" />
             </button>
 
-            <motion.img
-              key={galleryImages[openIndex].src}
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: EASE }}
-              src={galleryImages[openIndex].src}
-              alt={galleryImages[openIndex].alt}
-              onClick={(e) => e.stopPropagation()}
-              className="max-h-[85vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
-            />
+            {galleryImages[openIndex].video ? (
+              <motion.video
+                key={galleryImages[openIndex].video}
+                // A ref callback calls .play() the instant this node exists,
+                // synchronously within the click that opened (or arrow-key
+                // press that navigated to) it - browsers only honor
+                // autoplay-with-sound when it's tied directly to a user
+                // gesture like that; the plain `autoplay` attribute alone
+                // reliably gets ignored for an element mounted after a
+                // state update, silently leaving the video paused at 0:00.
+                ref={(node) => {
+                  const attempt = node?.play();
+                  attempt?.catch(() => {}); // native `controls` below is the fallback if the browser still refuses
+                }}
+                initial={{ opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                src={galleryImages[openIndex].video}
+                poster={galleryImages[openIndex].src}
+                controls
+                playsInline
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[85vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+              >
+                Your browser doesn&rsquo;t support video playback.{' '}
+                <a href={galleryImages[openIndex].video}>Download the video</a> instead.
+              </motion.video>
+            ) : (
+              <motion.img
+                key={galleryImages[openIndex].src}
+                initial={{ opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                src={galleryImages[openIndex].src}
+                alt={galleryImages[openIndex].alt}
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[85vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+              />
+            )}
 
             <button
               type="button"

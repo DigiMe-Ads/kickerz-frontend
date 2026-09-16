@@ -2,8 +2,10 @@
 -- Colombo Kickerz website - Instagram -> Gallery auto-sync
 -- =============================================================================
 -- Optional add-on to schema.sql. Run this once you have an Instagram access
--- token (see README "Instagram auto-sync" for how to get one) - paste it
--- into step 2 below before running the whole file.
+-- token (see README "Instagram auto-sync" for how to get one) - paste it into
+-- step 2 below before running the whole file the FIRST time. It's still safe
+-- to re-run the whole file after that (e.g. to pick up a later change to this
+-- file) - step 2 only ever seeds the token once and won't touch it again.
 --
 -- What this sets up:
 --   1. private.settings   - the Instagram token, off-limits to the REST API
@@ -48,14 +50,24 @@ alter table private.settings enable row level security;
 -- the SECURITY DEFINER functions below (and the SQL Editor) can.
 
 -- ---------------------------------------------------------------------------
--- 2. Paste your long-lived access token and numeric Instagram user id here,
---    then run this whole file. Re-running later with a new token (e.g.
---    after re-authorizing) just replaces these two rows.
+-- 2. Seeds the two settings rows on the very first run only - `do nothing`
+--    on conflict, deliberately, so re-running this file later (to pick up a
+--    change further down, e.g. a schema/function update) can never stomp on
+--    a real token that's already been set with these placeholders again.
+--
+--    First time only: paste your long-lived access token and numeric
+--    Instagram user id in place of the two placeholders below, THEN run the
+--    whole file.
+--
+--    To change the token later (a fresh one, after re-authorizing), don't
+--    edit this block - it won't do anything past the first run. Instead run
+--    just this, on its own:
+--      update private.settings set value = 'NEW_TOKEN' where key = 'instagram_access_token';
 -- ---------------------------------------------------------------------------
 insert into private.settings (key, value) values
   ('instagram_access_token', 'PASTE_YOUR_LONG_LIVED_TOKEN_HERE'),
   ('instagram_user_id', 'PASTE_YOUR_INSTAGRAM_USER_ID_HERE')
-on conflict (key) do update set value = excluded.value;
+on conflict (key) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- 3. The sync itself.
@@ -100,9 +112,13 @@ begin
   body := resp.content::jsonb;
 
   select coalesce(jsonb_agg(jsonb_build_object(
+    -- `src` is always an image - the grid tile and the lightbox's poster
+    -- frame - even for a Reel. `video` is only set for one, and is what
+    -- Gallery.jsx actually plays when the tile is opened.
     'src', case when item ->> 'media_type' = 'VIDEO'
                 then item ->> 'thumbnail_url'
                 else item ->> 'media_url' end,
+    'video', case when item ->> 'media_type' = 'VIDEO' then item ->> 'media_url' end,
     'alt', coalesce(nullif(left(regexp_replace(item ->> 'caption', '\s+', ' ', 'g'), 140), ''), 'Photo from Instagram'),
     'permalink', item ->> 'permalink'
   )), '[]'::jsonb)

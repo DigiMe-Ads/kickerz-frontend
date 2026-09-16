@@ -5,6 +5,12 @@
  * cleanly with no gaps - add or remove entries freely. Tiles are cropped to
  * 4:5 (Instagram's portrait ratio), which suits the academy's phone-shot
  * photography better than a square crop.
+ *
+ * An entry is `{ src, alt, video? }`. `src` is always a still image - the
+ * grid tile, and the lightbox's poster frame - and `video`, when present,
+ * is what actually plays once the tile is opened (see Gallery.jsx). Synced
+ * Reels set both automatically (supabase/instagram-sync.sql); a manual
+ * entry can too, from the admin's Gallery section.
  */
 export const galleryImages = [
   { src: '/images/gallery1.jpg', alt: 'Kickerz Girls training programme artwork' },
