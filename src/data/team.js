@@ -2,64 +2,53 @@
  * Coaching and academy staff.
  *
  * ---------------------------------------------------------------------------
- * HOW TO FINISH THIS FILE
+ * WHERE THIS CAME FROM
  * ---------------------------------------------------------------------------
- * The academy has 20 team members, but only two staff photographs were handed
- * over with the project (team/amrish.webp and team/vinoj.webp). Three further
- * names and roles were read off the live site.
+ * Names and details are from the "Coaches Information Form" responses
+ * (Dec 2025 - Jun 2026), using each coach's preferred name. Photos are the
+ * "Current Coaches" shoot, cropped square to public/images/team/<name>.webp.
  *
- * The remaining entries are placeholders. To complete them:
- *   1. Drop the portrait into  public/images/team/<first-name>.webp
- *      (square crop, 1000x1000, head and shoulders, matching the existing two)
- *   2. Fill in `name`, `role`, and set `image` to that path
- *   3. Delete the `placeholder: true` flag
- *   4. Fill in `details` with that coach's real license, experience etc. (or
- *      delete entries/rename the labels - it's edited the same way in the
- *      admin, under Coaching Team)
+ * "With Kickerz Since" is a year rather than the form's "N years" answer so
+ * it doesn't go stale - it was worked out from the date each form was filled.
  *
- * Any entry without an `image` renders an on-brand crest tile instead of a
- * broken photo, so the section looks finished at every stage of that process.
- * The grid and the carousel both size themselves off this array's length -
- * nothing else needs changing when members are added or removed.
+ * Coaches with a photo but no form response (Chaminda, Francis, Kasun) have
+ * no `details`, so their card just shows the name plate. Coaches with a form
+ * response but no photo (Madhusha, Rilwan) render the club crest instead.
+ *
+ * This is only the default: once the Coaching Team section is saved in the
+ * admin, the saved version in Supabase is shown instead.
  *
  * `details` is what shows when a visitor hovers (or taps, on phones) over a
- * coach's card - a short list of { label, value } pairs, e.g. a coaching
- * license or years of experience. Both the labels and the values are plain
- * text edited per-coach from the admin, so they don't have to be the same
- * three categories for everyone. Every entry below gets the same three
- * placeholders for now, so no one's card is left blank while the real
- * details are filled in.
+ * coach's card - a short list of { label, value } pairs.
  * ---------------------------------------------------------------------------
  */
-const placeholderDetails = [
-  { label: 'Current Coaching License', value: 'Details coming soon' },
-  { label: 'Years of Coaching Experience', value: 'Details coming soon' },
-  { label: 'Playing Experience', value: 'Details coming soon' },
-];
+const details = (license, experience, since, playing) =>
+  [
+    { label: 'Current Coaching License', value: license },
+    { label: 'Years of Coaching Experience', value: experience },
+    { label: 'With Kickerz Since', value: since },
+    { label: 'Playing Experience', value: playing },
+  ].filter((d) => d.value);
 
 export const team = [
-  { id: 1, name: 'Jude Karunaratne', role: 'Goal Keeper Coach', image: null, details: placeholderDetails },
-  { id: 2, name: 'Inthikab Thaam', role: 'Coach', image: null, details: placeholderDetails },
-  { id: 3, name: 'Olawale Oluwaseun', role: 'Coach', image: null, details: placeholderDetails },
-  { id: 4, name: 'Amrish', role: 'Coach', image: '/images/team/amrish.webp', needsReview: true, details: placeholderDetails },
-  { id: 5, name: 'Vinoj', role: 'Coach', image: '/images/team/vinoj.webp', needsReview: true, details: placeholderDetails },
-
-  // --- Placeholders: replace with the remaining 15 staff members -----------
-  { id: 6, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 7, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 8, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 9, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 10, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 11, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 12, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 13, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 14, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 15, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 16, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 17, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 18, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 19, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
-  { id: 20, name: 'Coach', role: 'Coaching Staff', image: null, placeholder: true, details: placeholderDetails },
+  { id: 1, name: 'Azward', role: 'Coach', image: '/images/team/azward.webp', details: details('B License', '15+ Years', '2023', 'National Level') },
+  { id: 2, name: 'Inthikab Thaam', role: 'Coach', image: '/images/team/inthikab.webp', details: details('D License', '15+ Years', null, 'School, Youth, Club') },
+  { id: 3, name: 'Aboobucker Siddeek', role: 'Coach', image: '/images/team/siddeek.webp', details: details('D License', '12+ Years', '2017', 'School, Youth, Club, District, Provincial, National Level') },
+  { id: 4, name: 'Jude Karunaratne', role: 'Goalkeeper Coach', image: '/images/team/jude.webp', details: [] },
+  { id: 5, name: 'Ola', role: 'Coach', image: '/images/team/olawale.webp', details: details('D License', '8+ Years', '2021', 'Club') },
+  { id: 6, name: 'Shaheer', role: 'Coach', image: '/images/team/shaheer.webp', details: details('D License', '5+ Years', '2024', 'School, Youth, Club, District, Provincial') },
+  { id: 7, name: 'Shanu Lakmali', role: 'Coach', image: '/images/team/shanu.webp', details: details('D License', '5+ Years', '2026', 'National Level') },
+  { id: 8, name: 'MKM Ishan', role: 'Coach', image: '/images/team/ishan.webp', details: details('D License', '4 Years', '2023', 'National Level – Sri Lanka Navy football team') },
+  { id: 9, name: 'Nilanga Silva', role: 'Coach', image: '/images/team/nilanga.webp', details: details('D License', '4 Years', '2025', 'School, Youth, Club, District, Provincial') },
+  { id: 10, name: 'Rilwan Nizard', role: 'Coach', image: null, details: details('D License', '3 Years', '2026', 'School, Youth, Club, National Level') },
+  { id: 11, name: 'Afdhal Janees', role: 'Coach', image: '/images/team/afdhal.webp', details: details('D License', '2 Years', '2024', 'School, Club') },
+  { id: 12, name: 'Mark Brayan Abinas', role: 'Coach', image: '/images/team/mark.webp', details: details('D License', '2 Years', '2022', 'School, Youth, Club') },
+  { id: 13, name: 'Madhusha Diyamantha', role: 'Coach', image: null, details: details('D License', '2 Years', '2024', 'School, Youth, Club, District, Provincial') },
+  { id: 14, name: 'Amrish', role: 'Coach', image: '/images/team/amrish.webp', details: details('Elite GR Coaching', '2 Years', '2024', 'School, Youth, Club') },
+  { id: 15, name: 'Shameel', role: 'Coach', image: '/images/team/shameel.webp', details: details('Elite GR Coaching', '1 Year', '2024', 'School, Youth, Club') },
+  { id: 16, name: 'Chaminda', role: 'Coach', image: '/images/team/chaminda.webp', details: [] },
+  { id: 17, name: 'Francis', role: 'Coach', image: '/images/team/francis.webp', details: [] },
+  { id: 18, name: 'Kasun', role: 'Coach', image: '/images/team/kasun.webp', details: [] },
 ];
 
 export default team;
